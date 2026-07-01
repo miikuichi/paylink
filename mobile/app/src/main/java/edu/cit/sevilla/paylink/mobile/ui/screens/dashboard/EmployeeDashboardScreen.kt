@@ -4,89 +4,240 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import edu.cit.sevilla.paylink.mobile.data.model.PayrollDto
+import edu.cit.sevilla.paylink.mobile.data.model.PayslipDto
 import edu.cit.sevilla.paylink.mobile.data.model.Session
 import edu.cit.sevilla.paylink.mobile.ui.theme.Cream100
 import edu.cit.sevilla.paylink.mobile.ui.theme.Cream200
 import edu.cit.sevilla.paylink.mobile.ui.theme.Gold500
 import edu.cit.sevilla.paylink.mobile.ui.theme.Maroon800
 
+private val employeeTabs = listOf("Overview", "My Payslips", "Payroll History")
+
 @Composable
 fun EmployeeDashboardScreen(
     session: Session,
+    viewModel: EmployeeDashboardViewModel,
     onLogout: () -> Unit,
 ) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    var selectedTab by remember { mutableIntStateOf(0) }
     val name = session.firstName.ifBlank { session.username }
+
+    LaunchedEffect(session.token) {
+        viewModel.load(session.token)
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Brush.verticalGradient(listOf(Cream100, Cream200)))
-            .padding(20.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp),
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Text(
-            text = "Welcome back, $name",
-            style = MaterialTheme.typography.headlineSmall,
-            color = Maroon800,
-            fontWeight = FontWeight.Bold,
-        )
-        Text(
-            text = "Employee dashboard",
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Column {
+                Text(
+                    text = "Welcome back, $name",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = Maroon800,
+                    fontWeight = FontWeight.Bold,
+                )
+                Text(
+                    text = state.profile?.position ?: "Employee dashboard",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+            Button(
+                onClick = onLogout,
+                colors = ButtonDefaults.buttonColors(containerColor = Gold500, contentColor = Maroon800),
+            ) {
+                Text("Log out")
+            }
+        }
 
-        EmployeeStatCard(title = "Employee Number", value = session.employeeNumber.ifBlank { "Pending" })
-        EmployeeStatCard(title = "Department", value = session.department.ifBlank { "Not set" })
-        EmployeeStatCard(title = "Position", value = session.position.ifBlank { "Not set" })
+        if (state.isLoading) {
+            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+        }
+        if (state.errorMessage.isNotBlank()) {
+            Text(
+                text = state.errorMessage,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        TabRow(selectedTabIndex = selectedTab) {
+            employeeTabs.forEachIndexed { index, tab ->
+                Tab(
+                    selected = selectedTab == index,
+                    onClick = { selectedTab = index },
+                    text = { Text(tab) },
+                )
+            }
+        }
 
-        Button(
-            onClick = onLogout,
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Gold500,
-                contentColor = Maroon800,
-            ),
-        ) {
-            Text("Log out", fontWeight = FontWeight.SemiBold)
+        when (selectedTab) {
+            0 -> EmployeeOverviewTab(
+                session = session,
+                payrolls = state.payrolls,
+                payslips = state.payslips,
+                onRefresh = { viewModel.load(session.token, force = true) },
+            )
+
+            1 -> EmployeePayslipsTab(state.payslips)
+            else -> EmployeeHistoryTab(state.payrolls)
         }
     }
 }
 
 @Composable
-private fun EmployeeStatCard(title: String, value: String) {
-    Card(
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+private fun EmployeeOverviewTab(
+    session: Session,
+    payrolls: List<PayrollDto>,
+    payslips: List<PayslipDto>,
+    onRefresh: () -> Unit,
+) {
+    val latestNetPay = payrolls.firstOrNull()?.netPay ?: 0.0
+    val latestPayslip = payslips.firstOrNull()
+    val ytdNetPay = payrolls.take(4).sumOf { it.netPay }
+
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 14.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Text(title, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
-            Text(value, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold)
+        item {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                EmployeeStatCard("Latest Net Pay", formatCurrency(latestNetPay), Modifier.weight(1f))
+                EmployeeStatCard("Payslips", payslips.size.toString(), Modifier.weight(1f))
+            }
+        }
+        item {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                EmployeeStatCard("Last 4 Net", formatCurrency(ytdNetPay), Modifier.weight(1f))
+                EmployeeStatCard("Employee ID", session.employeeNumber.ifBlank { "Pending" }, Modifier.weight(1f))
+            }
+        }
+        item {
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            ) {
+                Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Latest Payslip", fontWeight = FontWeight.Bold)
+                    if (latestPayslip == null) {
+                        Text("No payslip yet. HR/Admin must process payroll first.")
+                    } else {
+                        Text(latestPayslip.periodLabel)
+                        Text("Gross: ${formatCurrency(latestPayslip.grossPay)}")
+                        Text("Deductions: ${formatCurrency(latestPayslip.totalDeductions)}")
+                        Text("Net: ${formatCurrency(latestPayslip.netPay)}", fontWeight = FontWeight.SemiBold)
+                    }
+                    Button(onClick = onRefresh, modifier = Modifier.fillMaxWidth()) {
+                        Text("Refresh Data")
+                    }
+                }
+            }
         }
     }
 }
+
+@Composable
+private fun EmployeePayslipsTab(payslips: List<PayslipDto>) {
+    LazyColumn(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        if (payslips.isEmpty()) {
+            item {
+                Text(
+                    "No payslips issued yet.",
+                    modifier = Modifier.padding(12.dp),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                )
+            }
+        }
+        items(payslips, key = { it.id }) { payslip ->
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            ) {
+                Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(payslip.periodLabel, fontWeight = FontWeight.Bold)
+                    Text("Gross: ${formatCurrency(payslip.grossPay)}")
+                    Text("Deductions: ${formatCurrency(payslip.totalDeductions)}")
+                    Text("Net: ${formatCurrency(payslip.netPay)}", fontWeight = FontWeight.SemiBold)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun EmployeeHistoryTab(payrolls: List<PayrollDto>) {
+    LazyColumn(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        if (payrolls.isEmpty()) {
+            item {
+                Text(
+                    "No payroll history yet.",
+                    modifier = Modifier.padding(12.dp),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                )
+            }
+        }
+
+        items(payrolls, key = { it.id }) { payroll ->
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            ) {
+                Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(payroll.payPeriodLabel, fontWeight = FontWeight.Bold)
+                    Text("Gross: ${formatCurrency(payroll.grossPay)}")
+                    Text("Deductions: ${formatCurrency(payroll.totalDeductions)}")
+                    Text("Net: ${formatCurrency(payroll.netPay)}")
+                    Text("Status: ${payroll.status}")
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun EmployeeStatCard(title: String, value: String, modifier: Modifier = Modifier) {
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+    ) {
+        Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp)) {
+            Text(title, style = MaterialTheme.typography.labelMedium)
+            Text(value, fontWeight = FontWeight.Bold)
+        }
+    }
+}
+
+private fun formatCurrency(amount: Double): String = "PHP ${"%,.2f".format(amount)}"

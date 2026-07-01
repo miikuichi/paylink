@@ -19,13 +19,16 @@ import androidx.navigation.compose.rememberNavController
 import edu.cit.sevilla.paylink.mobile.data.model.Session
 import edu.cit.sevilla.paylink.mobile.data.network.NetworkModule
 import edu.cit.sevilla.paylink.mobile.data.repo.AuthRepository
+import edu.cit.sevilla.paylink.mobile.data.repo.DashboardRepository
 import edu.cit.sevilla.paylink.mobile.data.repo.SessionStore
 import edu.cit.sevilla.paylink.mobile.ui.navigation.NavRoutes
 import edu.cit.sevilla.paylink.mobile.ui.screens.auth.AuthViewModel
 import edu.cit.sevilla.paylink.mobile.ui.screens.auth.LoginScreen
 import edu.cit.sevilla.paylink.mobile.ui.screens.auth.RegisterScreen
 import edu.cit.sevilla.paylink.mobile.ui.screens.dashboard.EmployeeDashboardScreen
+import edu.cit.sevilla.paylink.mobile.ui.screens.dashboard.EmployeeDashboardViewModel
 import edu.cit.sevilla.paylink.mobile.ui.screens.dashboard.HrDashboardScreen
+import edu.cit.sevilla.paylink.mobile.ui.screens.dashboard.HrDashboardViewModel
 import edu.cit.sevilla.paylink.mobile.ui.theme.PayLinkTheme
 
 @Composable
@@ -41,6 +44,22 @@ fun PayLinkMobileApp(appContext: Context) {
 
     val authViewModel: AuthViewModel = viewModel(
         factory = AuthViewModel.Factory(repository)
+    )
+
+    val dashboardRepository = remember {
+        DashboardRepository(
+            employeeApi = NetworkModule.employeeApi,
+            payrollApi = NetworkModule.payrollApi,
+            payslipApi = NetworkModule.payslipApi,
+            payPeriodApi = NetworkModule.payPeriodApi,
+        )
+    }
+
+    val employeeDashboardViewModel: EmployeeDashboardViewModel = viewModel(
+        factory = EmployeeDashboardViewModel.Factory(dashboardRepository),
+    )
+    val hrDashboardViewModel: HrDashboardViewModel = viewModel(
+        factory = HrDashboardViewModel.Factory(dashboardRepository),
     )
 
     val navController = rememberNavController()
@@ -74,6 +93,7 @@ fun PayLinkMobileApp(appContext: Context) {
             composable(NavRoutes.EmployeeDashboard) {
                 EmployeeDashboardScreen(
                     session = session ?: return@composable,
+                    viewModel = employeeDashboardViewModel,
                     onLogout = {
                         authViewModel.logout {
                             navController.navigate(NavRoutes.Login) {
@@ -87,6 +107,7 @@ fun PayLinkMobileApp(appContext: Context) {
             composable(NavRoutes.HrDashboard) {
                 HrDashboardScreen(
                     session = session ?: return@composable,
+                    viewModel = hrDashboardViewModel,
                     onLogout = {
                         authViewModel.logout {
                             navController.navigate(NavRoutes.Login) {

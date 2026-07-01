@@ -27,4 +27,7 @@ object NetworkModule {
 
     val authApi: AuthApi = retrofit.create(AuthApi::class.java)
     val employeeApi: EmployeeApi = retrofit.create(EmployeeApi::class.java)
+    val payrollApi: PayrollApi = retrofit.create(PayrollApi::class.java)
+    val payslipApi: PayslipApi = retrofit.create(PayslipApi::class.java)
+    val payPeriodApi: PayPeriodApi = retrofit.create(PayPeriodApi::class.java)
 }

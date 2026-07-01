@@ -32,6 +32,10 @@ data class EmployeeProfile(
     val lastName: String,
     val position: String?,
     val department: String?,
+    val dateHired: String?,
+    val basicRate: Double?,
+    val status: String,
+    val createdAt: String?,
 )
 
 data class Session(

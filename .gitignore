@@ -1,0 +1,65 @@
+### Node / Vite (web) ###
+web/node_modules/
+node_modules/
+web/dist/
+dist/
+web/dist-ssr/
+web/.vite/
+.vite/
+*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.npm/
+.eslintcache
+
+### Java / Maven (backend) ###
+backend/paylink/target/
+target/
+*.class
+*.jar
+*.war
+*.ear
+.mvn/wrapper/maven-wrapper.jar
+
+### Kotlin / Android (mobile) ###
+mobile/build/
+mobile/.gradle/
+mobile/app/build/
+mobile/local.properties
+mobile/.cxx/
+mobile/captures/
+*.iml
+.gradle/
+build/
+local.properties
+.cxx/
+
+### Environment / secrets ###
+.env
+.env.local
+.env.*.local
+*.env
+
+### IDE ###
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+### OS ###
+.DS_Store
+Thumbs.db
+desktop.ini
+
+### Logs ###
+*.log
+logs/

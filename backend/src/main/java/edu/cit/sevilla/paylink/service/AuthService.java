@@ -49,7 +49,7 @@ public class AuthService {
                 .username(request.username())
                 .email(request.email())
                 .passwordHash(passwordEncoder.encode(request.password()))
-            .role(requestedRole)
+                .role(requestedRole)
                 .enabled(true)
                 .build();
 
@@ -63,7 +63,7 @@ public class AuthService {
         // account.
         Employee employee = Employee.builder()
                 .user(user)
-            .employeeNumber("TMP-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase())
+                .employeeNumber("TMP-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase())
                 .firstName(request.firstName())
                 .lastName(request.lastName())
                 .basicRate(MIN_BASIC_RATE)

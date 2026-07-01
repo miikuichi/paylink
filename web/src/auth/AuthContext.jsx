@@ -48,7 +48,8 @@ export function AuthProvider({ children }) {
             ...prev,
             firstName: employeeProfile?.firstName ?? prev.firstName,
             lastName: employeeProfile?.lastName ?? prev.lastName,
-            employeeNumber: employeeProfile?.employeeNumber ?? prev.employeeNumber,
+            employeeNumber:
+              employeeProfile?.employeeNumber ?? prev.employeeNumber,
             position: employeeProfile?.position ?? prev.position,
             department: employeeProfile?.department ?? prev.department,
           };

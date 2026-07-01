@@ -5,7 +5,11 @@ import Panel from "../../components/ui/Panel.jsx";
 import DataTable from "../../components/ui/DataTable.jsx";
 import Badge from "../../components/ui/Badge.jsx";
 import Button from "../../components/ui/Button.jsx";
-import { getEmployees, createEmployee, updateEmployee } from "../../api/employees.js";
+import {
+  getEmployees,
+  createEmployee,
+  updateEmployee,
+} from "../../api/employees.js";
 import {
   getPayPeriods,
   createPayPeriod,
@@ -389,7 +393,8 @@ const HrDashboard = () => {
               }
             >
               <p style={{ opacity: 0.7, margin: 0 }}>
-                After adding employees, you can create a pay period, run payroll, and generate payslips from this dashboard.
+                After adding employees, you can create a pay period, run
+                payroll, and generate payslips from this dashboard.
               </p>
             </Panel>
           )}
@@ -548,7 +553,11 @@ const HrDashboard = () => {
                 header: "Actions",
                 align: "center",
                 render: (r) => (
-                  <Button size="sm" variant="ghost" onClick={() => openEditRate(r)}>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => openEditRate(r)}
+                  >
                     Edit Rate
                   </Button>
                 ),
@@ -582,7 +591,8 @@ const HrDashboard = () => {
               }
             >
               <p style={{ opacity: 0.7, margin: 0 }}>
-                Once a period exists, run payroll for active employees and generate payslips.
+                Once a period exists, run payroll for active employees and
+                generate payslips.
               </p>
             </Panel>
           )}
@@ -729,9 +739,13 @@ const HrDashboard = () => {
       {activeKey === "payslips" && (
         <>
           {payPeriods.length === 0 && (
-            <Panel title="No pay periods yet" subtitle="Create a pay period to issue and view payslips.">
+            <Panel
+              title="No pay periods yet"
+              subtitle="Create a pay period to issue and view payslips."
+            >
               <p style={{ opacity: 0.7, margin: 0 }}>
-                Payslips are generated from processed payrolls within a specific pay period.
+                Payslips are generated from processed payrolls within a specific
+                pay period.
               </p>
             </Panel>
           )}
@@ -926,11 +940,15 @@ const HrDashboard = () => {
       )}
 
       {showEditEmployee && (
-        <div className="modal-overlay" onClick={() => setShowEditEmployee(false)}>
+        <div
+          className="modal-overlay"
+          onClick={() => setShowEditEmployee(false)}
+        >
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h3 style={{ margin: "0 0 16px" }}>Edit Employee Rate</h3>
             <p style={{ marginTop: 0, opacity: 0.7 }}>
-              {editingEmployee?.firstName} {editingEmployee?.lastName} ({editingEmployee?.employeeNumber})
+              {editingEmployee?.firstName} {editingEmployee?.lastName} (
+              {editingEmployee?.employeeNumber})
             </p>
             {editRateError && (
               <p style={{ color: "red", marginBottom: 8 }}>{editRateError}</p>
@@ -939,8 +957,12 @@ const HrDashboard = () => {
               onSubmit={handleUpdateRate}
               style={{ display: "flex", flexDirection: "column", gap: 10 }}
             >
-              <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                <span style={{ fontSize: 13, fontWeight: 500 }}>Basic Rate (PHP/month)</span>
+              <label
+                style={{ display: "flex", flexDirection: "column", gap: 4 }}
+              >
+                <span style={{ fontSize: 13, fontWeight: 500 }}>
+                  Basic Rate (PHP/month)
+                </span>
                 <input
                   type="number"
                   min="0"
@@ -956,7 +978,8 @@ const HrDashboard = () => {
                 />
               </label>
               <p style={{ margin: 0, fontSize: 12, opacity: 0.65 }}>
-                Minimum enforced rate is based on the PH city minimum wage baseline.
+                Minimum enforced rate is based on the PH city minimum wage
+                baseline.
               </p>
               <div
                 style={{

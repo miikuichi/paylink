@@ -68,7 +68,7 @@ public class EmployeeService {
 
         Employee employee = employeeRepository.save(Employee.builder()
                 .user(user)
-            .employeeNumber("TMP-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase())
+                .employeeNumber("TMP-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase())
                 .firstName(req.firstName())
                 .lastName(req.lastName())
                 .position(req.position())

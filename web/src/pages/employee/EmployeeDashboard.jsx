@@ -175,7 +175,10 @@ const EmployeeDashboard = () => {
     .slice(0, 4)
     .reduce((sum, r) => sum + (r.netPay ?? 0), 0);
   const displayName =
-    user?.firstName?.trim() || user?.username || user?.email?.split("@")[0] || "there";
+    user?.firstName?.trim() ||
+    user?.username ||
+    user?.email?.split("@")[0] ||
+    "there";
 
   return (
     <DashboardLayout
@@ -200,7 +203,8 @@ const EmployeeDashboard = () => {
               subtitle="Your HR/admin team still needs to process your first payroll for the selected pay period."
             >
               <p style={{ opacity: 0.7, margin: 0 }}>
-                Once payroll is processed, your latest net pay, payslip breakdown, and payroll history will appear here.
+                Once payroll is processed, your latest net pay, payslip
+                breakdown, and payroll history will appear here.
               </p>
             </Panel>
           )}

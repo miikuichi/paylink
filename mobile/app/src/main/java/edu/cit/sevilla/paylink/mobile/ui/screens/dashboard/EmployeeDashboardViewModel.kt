@@ -57,6 +57,10 @@ class EmployeeDashboardViewModel(
         }
     }
 
+    fun clearError() {
+        _state.value = _state.value.copy(errorMessage = "")
+    }
+
     class Factory(private val repository: DashboardRepository) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {

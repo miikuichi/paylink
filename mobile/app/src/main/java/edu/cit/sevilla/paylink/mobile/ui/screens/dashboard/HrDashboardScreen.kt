@@ -18,12 +18,15 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -42,6 +45,7 @@ import edu.cit.sevilla.paylink.mobile.data.model.PayrollDto
 import edu.cit.sevilla.paylink.mobile.data.model.Session
 import edu.cit.sevilla.paylink.mobile.ui.theme.Cream100
 import edu.cit.sevilla.paylink.mobile.ui.theme.Cream200
+import edu.cit.sevilla.paylink.mobile.ui.theme.Gold100
 import edu.cit.sevilla.paylink.mobile.ui.theme.Gold500
 import edu.cit.sevilla.paylink.mobile.ui.theme.Maroon800
 
@@ -99,14 +103,18 @@ fun HrDashboardScreen(
             LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
         }
         if (state.errorMessage.isNotBlank()) {
-            Text(
-                text = state.errorMessage,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall,
+            DashboardErrorBanner(
+                message = state.errorMessage,
+                onRetry = { viewModel.load(session.token, force = true) },
+                onDismiss = viewModel::clearError,
             )
         }
 
-        TabRow(selectedTabIndex = selectedTab) {
+        TabRow(
+            selectedTabIndex = selectedTab,
+            containerColor = Gold100,
+            contentColor = Maroon800,
+        ) {
             hrTabs.forEachIndexed { index, label ->
                 Tab(
                     selected = selectedTab == index,
@@ -116,27 +124,33 @@ fun HrDashboardScreen(
             }
         }
 
-        when (selectedTab) {
-            0 -> HrOverviewTab(state)
-            1 -> HrEmployeesTab(
-                state = state,
-                onAddEmployeeClick = { showAddEmployeeDialog = true },
-                onEditRateClick = { showEditRateDialogForId = it },
-            )
+        Crossfade(
+            targetState = selectedTab,
+            animationSpec = tween(durationMillis = 220),
+            label = "hr-tab-crossfade",
+        ) { tabIndex ->
+            when (tabIndex) {
+                0 -> HrOverviewTab(state)
+                1 -> HrEmployeesTab(
+                    state = state,
+                    onAddEmployeeClick = { showAddEmployeeDialog = true },
+                    onEditRateClick = { showEditRateDialogForId = it },
+                )
 
-            2 -> HrPayrollTab(
-                state = state,
-                onSelectPeriod = { viewModel.selectPeriod(session.token, it) },
-                onAddPeriodClick = { showAddPeriodDialog = true },
-                onRunPayroll = { viewModel.processPayroll(session.token, it) },
-                onGeneratePayslip = { viewModel.generatePayslip(session.token, it) },
-            )
+                2 -> HrPayrollTab(
+                    state = state,
+                    onSelectPeriod = { viewModel.selectPeriod(session.token, it) },
+                    onAddPeriodClick = { showAddPeriodDialog = true },
+                    onRunPayroll = { viewModel.processPayroll(session.token, it) },
+                    onGeneratePayslip = { viewModel.generatePayslip(session.token, it) },
+                )
 
-            else -> HrPayslipsTab(
-                state = state,
-                onSelectPeriod = { viewModel.selectPeriod(session.token, it) },
-                onAddPeriodClick = { showAddPeriodDialog = true },
-            )
+                else -> HrPayslipsTab(
+                    state = state,
+                    onSelectPeriod = { viewModel.selectPeriod(session.token, it) },
+                    onAddPeriodClick = { showAddPeriodDialog = true },
+                )
+            }
         }
     }
 
@@ -202,9 +216,11 @@ private fun HrOverviewTab(state: HrDashboardState) {
             Card(
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 5.dp),
             ) {
                 Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text("Quick Summary", fontWeight = FontWeight.Bold)
+                    HorizontalDivider()
                     Text("Employees in roster: ${state.employees.size}")
                     Text("Pay periods created: ${state.payPeriods.size}")
                     Text("Payroll results in selected period: ${state.payrolls.size}")
@@ -241,6 +257,7 @@ private fun HrEmployeesTab(
             Card(
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
             ) {
                 Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text("${employee.firstName} ${employee.lastName}", fontWeight = FontWeight.Bold)
@@ -285,6 +302,7 @@ private fun HrPayrollTab(
             Card(
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
             ) {
                 Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text("${employee.firstName} ${employee.lastName}", fontWeight = FontWeight.Bold)
@@ -348,6 +366,7 @@ private fun HrPayslipsTab(
             Card(
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
             ) {
                 Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(payslip.employeeName, fontWeight = FontWeight.Bold)
@@ -518,11 +537,70 @@ private fun HrStatCard(title: String, value: String, modifier: Modifier = Modifi
         modifier = modifier,
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
     ) {
         Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp)) {
             Text(title, style = MaterialTheme.typography.labelMedium)
             Text(value, fontWeight = FontWeight.Bold)
         }
+    }
+}
+
+@Composable
+private fun DashboardErrorBanner(
+    message: String,
+    onRetry: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    Card(
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.errorContainer,
+            contentColor = MaterialTheme.colorScheme.onErrorContainer,
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text("Request failed", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+            Text(
+                text = errorHint(message),
+                style = MaterialTheme.typography.bodySmall,
+            )
+            Text(text = message, style = MaterialTheme.typography.bodySmall)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(onClick = onRetry) { Text("Retry") }
+                Button(
+                    onClick = onDismiss,
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                ) {
+                    Text("Dismiss")
+                }
+            }
+        }
+    }
+}
+
+private fun errorHint(message: String): String {
+    val lower = message.lowercase()
+    return when {
+        "http 500" in lower || "internal server error" in lower ->
+            "Server error detected. Retry once, then share this message with your backend logs."
+
+        "http 401" in lower || "unauthorized" in lower ->
+            "Your session may have expired. Log out and log back in."
+
+        "http 403" in lower || "forbidden" in lower ->
+            "This specific request is blocked by permissions for your account."
+
+        "network error" in lower || "unable to reach" in lower ->
+            "Cannot connect to backend. Verify backend is running and API base URL is correct."
+
+        else -> "Request failed. Tap Retry to try again."
     }
 }
 

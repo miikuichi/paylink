@@ -1,6 +1,7 @@
 package edu.cit.sevilla.paylink.mobile.ui.screens.dashboard
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,15 +11,22 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Badge
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -35,6 +43,7 @@ import edu.cit.sevilla.paylink.mobile.data.model.PayslipDto
 import edu.cit.sevilla.paylink.mobile.data.model.Session
 import edu.cit.sevilla.paylink.mobile.ui.theme.Cream100
 import edu.cit.sevilla.paylink.mobile.ui.theme.Cream200
+import edu.cit.sevilla.paylink.mobile.ui.theme.Gold100
 import edu.cit.sevilla.paylink.mobile.ui.theme.Gold500
 import edu.cit.sevilla.paylink.mobile.ui.theme.Maroon800
 
@@ -86,14 +95,18 @@ fun EmployeeDashboardScreen(
             LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
         }
         if (state.errorMessage.isNotBlank()) {
-            Text(
-                text = state.errorMessage,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall,
+            DashboardErrorBanner(
+                message = state.errorMessage,
+                onRetry = { viewModel.load(session.token, force = true) },
+                onDismiss = viewModel::clearError,
             )
         }
 
-        TabRow(selectedTabIndex = selectedTab) {
+        TabRow(
+            selectedTabIndex = selectedTab,
+            containerColor = Gold100,
+            contentColor = Maroon800,
+        ) {
             employeeTabs.forEachIndexed { index, tab ->
                 Tab(
                     selected = selectedTab == index,
@@ -103,16 +116,22 @@ fun EmployeeDashboardScreen(
             }
         }
 
-        when (selectedTab) {
-            0 -> EmployeeOverviewTab(
-                session = session,
-                payrolls = state.payrolls,
-                payslips = state.payslips,
-                onRefresh = { viewModel.load(session.token, force = true) },
-            )
+        Crossfade(
+            targetState = selectedTab,
+            animationSpec = tween(durationMillis = 220),
+            label = "employee-tab-crossfade",
+        ) { tabIndex ->
+            when (tabIndex) {
+                0 -> EmployeeOverviewTab(
+                    session = session,
+                    payrolls = state.payrolls,
+                    payslips = state.payslips,
+                    onRefresh = { viewModel.load(session.token, force = true) },
+                )
 
-            1 -> EmployeePayslipsTab(state.payslips)
-            else -> EmployeeHistoryTab(state.payrolls)
+                1 -> EmployeePayslipsTab(state.payslips)
+                else -> EmployeeHistoryTab(state.payrolls)
+            }
         }
     }
 }
@@ -148,9 +167,16 @@ private fun EmployeeOverviewTab(
             Card(
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
             ) {
                 Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("Latest Payslip", fontWeight = FontWeight.Bold)
+                    Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+                        Text("Latest Payslip", fontWeight = FontWeight.Bold)
+                        if (latestPayslip != null) {
+                            Badge { Text("Live") }
+                        }
+                    }
+                    HorizontalDivider()
                     if (latestPayslip == null) {
                         Text("No payslip yet. HR/Admin must process payroll first.")
                     } else {
@@ -184,6 +210,7 @@ private fun EmployeePayslipsTab(payslips: List<PayslipDto>) {
             Card(
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
             ) {
                 Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(payslip.periodLabel, fontWeight = FontWeight.Bold)
@@ -213,6 +240,7 @@ private fun EmployeeHistoryTab(payrolls: List<PayrollDto>) {
             Card(
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
             ) {
                 Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(payroll.payPeriodLabel, fontWeight = FontWeight.Bold)
@@ -228,15 +256,80 @@ private fun EmployeeHistoryTab(payrolls: List<PayrollDto>) {
 
 @Composable
 private fun EmployeeStatCard(title: String, value: String, modifier: Modifier = Modifier) {
+    val background by animateColorAsState(
+        targetValue = MaterialTheme.colorScheme.surface,
+        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+        label = "employee-stat-bg",
+    )
+
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        colors = CardDefaults.cardColors(containerColor = background),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
     ) {
         Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp)) {
             Text(title, style = MaterialTheme.typography.labelMedium)
             Text(value, fontWeight = FontWeight.Bold)
         }
+    }
+}
+
+@Composable
+private fun DashboardErrorBanner(
+    message: String,
+    onRetry: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    Card(
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.errorContainer,
+            contentColor = MaterialTheme.colorScheme.onErrorContainer,
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Text("Could not load employee data", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+            Text(
+                text = errorHint(message),
+                style = MaterialTheme.typography.bodySmall,
+            )
+            Text(text = message, style = MaterialTheme.typography.bodySmall)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(onClick = onRetry) { Text("Retry") }
+                Button(
+                    onClick = onDismiss,
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                ) {
+                    Text("Dismiss")
+                }
+            }
+        }
+    }
+}
+
+private fun errorHint(message: String): String {
+    val lower = message.lowercase()
+    return when {
+        "http 500" in lower || "internal server error" in lower ->
+            "Server error detected. Retry once, then share this message with your backend logs."
+
+        "http 401" in lower || "unauthorized" in lower ->
+            "Your session may have expired. Log out and log back in."
+
+        "http 403" in lower || "forbidden" in lower ->
+            "This request is blocked by permissions for your account."
+
+        "network error" in lower || "unable to reach" in lower ->
+            "Cannot connect to backend. Check backend server and emulator base URL."
+
+        else -> "Request failed. Tap Retry to try again."
     }
 }
 

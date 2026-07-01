@@ -44,27 +44,29 @@ class HrDashboardViewModel(
         loadedToken = token
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true, errorMessage = "")
-            runCatching {
-                val employees = repository.getEmployees(token)
-                val periods = repository.getPayPeriods(token)
-                val selected = _state.value.selectedPeriodId ?: periods.firstOrNull()?.id
-                val payrolls = selected?.let { repository.getPayrollsByPeriod(token, it) } ?: emptyList()
-                val payslips = selected?.let { repository.getPayslipsByPeriod(token, it) } ?: emptyList()
-                HrDashboardState(
-                    isLoading = false,
-                    employees = employees,
-                    payPeriods = periods,
-                    selectedPeriodId = selected,
-                    payrolls = payrolls,
-                    payslips = payslips,
-                )
-            }.onSuccess { _state.value = it }
-                .onFailure { err ->
-                    _state.value = _state.value.copy(
-                        isLoading = false,
-                        errorMessage = err.message ?: "Failed to load HR dashboard",
-                    )
-                }
+
+            val employeesResult = runCatching { repository.getEmployees(token) }
+            val periodsResult = runCatching { repository.getPayPeriods(token) }
+
+            val employees = employeesResult.getOrElse { emptyList() }
+            val periods = periodsResult.getOrElse { emptyList() }
+            val selected = _state.value.selectedPeriodId ?: periods.firstOrNull()?.id
+
+            _state.value = _state.value.copy(
+                isLoading = false,
+                employees = employees,
+                payPeriods = periods,
+                selectedPeriodId = selected,
+                payrolls = emptyList(),
+                payslips = emptyList(),
+                errorMessage = employeesResult.exceptionOrNull()?.message
+                    ?: periodsResult.exceptionOrNull()?.message
+                    ?: "",
+            )
+
+            selected?.let { periodId ->
+                refreshPeriodData(token, periodId)
+            }
         }
     }
 

@@ -20,14 +20,17 @@ public class PayslipService {
     private final PayslipRepository payslipRepository;
     private final PayrollRepository payrollRepository;
 
+    @Transactional(readOnly = true)
     public List<PayslipDto> findByEmployeeUserId(Long userId) {
         return payslipRepository.findByEmployeeUserId(userId).stream().map(PayslipDto::from).toList();
     }
 
+    @Transactional(readOnly = true)
     public List<PayslipDto> findByPayPeriod(Long payPeriodId) {
         return payslipRepository.findByPayPeriodId(payPeriodId).stream().map(PayslipDto::from).toList();
     }
 
+    @Transactional(readOnly = true)
     public PayslipDto findById(Long id) {
         return payslipRepository.findById(id)
                 .map(PayslipDto::from)

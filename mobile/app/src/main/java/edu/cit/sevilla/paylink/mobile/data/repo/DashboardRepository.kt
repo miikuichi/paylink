@@ -17,6 +17,7 @@ import edu.cit.sevilla.paylink.mobile.data.network.PayslipApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
+import java.io.IOException
 
 class DashboardRepository(
     private val employeeApi: EmployeeApi,
@@ -84,10 +85,20 @@ class DashboardRepository(
         return try {
             block()
         } catch (ex: HttpException) {
+            val code = ex.code()
+            val requestPath = ex.response()?.raw()?.request?.url?.encodedPath
             val raw = ex.response()?.errorBody()?.string()
             val parsed = runCatching { Gson().fromJson(raw, ApiError::class.java) }.getOrNull()
-            val message = parsed?.message ?: parsed?.error ?: "Request failed (${ex.code()})"
+            val backendMessage = parsed?.message ?: parsed?.error
+            val backendPath = parsed?.path ?: requestPath
+            val summary = "HTTP $code${if (!backendPath.isNullOrBlank()) " on $backendPath" else ""}"
+            val message = when {
+                !backendMessage.isNullOrBlank() -> "$summary: $backendMessage"
+                else -> "$summary: Request failed"
+            }
             throw IllegalStateException(message)
+        } catch (ex: IOException) {
+            throw IllegalStateException("Network error: unable to reach PayLink backend")
         } catch (ex: Exception) {
             val message = ex.message ?: "Unable to reach PayLink backend"
             throw IllegalStateException(message)

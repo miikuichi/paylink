@@ -1,0 +1,84 @@
+package edu.cit.sevilla.paylink.auth;
+
+import edu.cit.sevilla.paylink.employee.Employee;
+import edu.cit.sevilla.paylink.employee.EmployeeRepository;
+import edu.cit.sevilla.paylink.employee.EmployeeStatus;
+import edu.cit.sevilla.paylink.security.JwtService;
+import edu.cit.sevilla.paylink.user.Role;
+import edu.cit.sevilla.paylink.user.User;
+import edu.cit.sevilla.paylink.user.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+
+@Service
+@RequiredArgsConstructor
+public class AuthService {
+
+    private final UserRepository userRepository;
+    private final EmployeeRepository employeeRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
+
+    @Transactional
+    public AuthResponse register(RegisterRequest request) {
+        if (userRepository.existsByUsername(request.username())) {
+            throw new IllegalArgumentException("Username is already taken");
+        }
+        if (userRepository.existsByEmail(request.email())) {
+            throw new IllegalArgumentException("Email is already registered");
+        }
+
+        // Every new self-registered account is an Employee (Business Rule 1).
+        // Admin/HR accounts are provisioned separately by an existing admin.
+        User user = User.builder()
+                .username(request.username())
+                .email(request.email())
+                .passwordHash(passwordEncoder.encode(request.password()))
+                .role(Role.EMPLOYEE)
+                .enabled(true)
+                .build();
+
+        try {
+            user = userRepository.save(user);
+        } catch (DataIntegrityViolationException ex) {
+            throw new IllegalArgumentException("Username or email is already registered");
+        }
+
+        // Business Rule 5: every employee profile must be linked to a valid user account.
+        Employee employee = Employee.builder()
+                .user(user)
+                .firstName(request.firstName())
+                .lastName(request.lastName())
+                .basicRate(BigDecimal.ZERO)
+                .status(EmployeeStatus.ACTIVE)
+                .build();
+        employee = employeeRepository.save(employee);
+
+        // Generate a human-readable employee number now that the id is known.
+        employee.setEmployeeNumber("EMP" + String.format("%05d", employee.getId()));
+        employeeRepository.save(employee);
+
+        String token = jwtService.generateToken(user);
+        return new AuthResponse(token, user.getId(), user.getUsername(), user.getEmail(), user.getRole());
+    }
+
+    public AuthResponse login(LoginRequest request) {
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.username(), request.password())
+        );
+
+        User user = userRepository.findByUsername(request.username())
+                .orElseThrow(() -> new IllegalStateException("User not found after authentication"));
+
+        String token = jwtService.generateToken(user);
+        return new AuthResponse(token, user.getId(), user.getUsername(), user.getEmail(), user.getRole());
+    }
+}

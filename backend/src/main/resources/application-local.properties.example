@@ -1,0 +1,12 @@
+# Copy this file to application-local.properties (same directory) and fill in real values.
+# application-local.properties is gitignored and will NEVER be committed.
+# Store your real values in a password manager so you can recreate this file on any device.
+
+# Supabase Postgres (Transaction mode pooler — port 6543)
+# Find these under: Supabase project -> Settings -> Database -> Connection string (JDBC)
+spring.datasource.url=jdbc:postgresql://<pooler-host>:6543/postgres?sslmode=require
+spring.datasource.username=postgres.<your-project-ref>
+spring.datasource.password=your-database-password
+
+# JWT signing secret — generate with: openssl rand -base64 48
+paylink.security.jwt.secret=your-random-jwt-secret-min-32-chars

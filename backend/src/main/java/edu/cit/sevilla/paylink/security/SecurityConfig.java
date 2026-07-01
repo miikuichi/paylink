@@ -65,7 +65,11 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/employees/me", "/api/payrolls/me", "/api/payslips/me")
                         .hasAnyRole("ADMIN", "EMPLOYEE")
-                        .requestMatchers("/api/employees/**", "/api/payrolls/**", "/api/payslips/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/pay-periods", "/api/pay-periods/**")
+                        .hasAnyRole("ADMIN", "EMPLOYEE")
+                        .requestMatchers("/api/employees/**", "/api/payrolls/**", "/api/payslips/**",
+                                "/api/pay-periods/**")
+                        .hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

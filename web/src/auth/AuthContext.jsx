@@ -1,53 +1,98 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react'
-import { findMockAccount } from './mockAccounts'
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { apiLogin, apiRegister } from "../api/auth.js";
+import { getMe } from "../api/employees.js";
 
-const AuthContext = createContext(null)
-const STORAGE_KEY = 'paylink.session'
+const AuthContext = createContext(null);
+const STORAGE_KEY = "paylink.session";
+
+// Assign a consistent avatar colour from a palette based on userId
+const AVATAR_COLORS = ["#7c3aed", "#b45309", "#0369a1", "#065f46", "#9f1239"];
+const avatarColor = (id) => AVATAR_COLORS[(id ?? 0) % AVATAR_COLORS.length];
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? JSON.parse(raw) : null
-  })
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  });
 
   useEffect(() => {
     if (user) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(user))
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
     } else {
-      localStorage.removeItem(STORAGE_KEY)
+      localStorage.removeItem(STORAGE_KEY);
     }
-  }, [user])
+  }, [user]);
 
   const login = async (username, password) => {
-    // Simulate network latency for a realistic loading state.
-    await new Promise((resolve) => setTimeout(resolve, 600))
+    const authData = await apiLogin(username, password);
+    // token must be stored before we fetch the protected /employees/me endpoint
+    const partial = { token: authData.token };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(partial));
 
-    const account = findMockAccount(username, password)
-    if (!account) {
-      throw new Error('Invalid username or password.')
+    let employeeProfile = null;
+    try {
+      employeeProfile = await getMe();
+    } catch {
+      // ADMIN accounts created directly in DB may not have an employee record
     }
 
-    const sessionUser = { username: account.username, role: account.role, ...account.profile }
-    setUser(sessionUser)
-    return sessionUser
-  }
+    const sessionUser = {
+      token: authData.token,
+      id: authData.userId,
+      username: authData.username,
+      email: authData.email,
+      role: authData.role,
+      firstName: employeeProfile?.firstName ?? "",
+      lastName: employeeProfile?.lastName ?? "",
+      employeeNumber: employeeProfile?.employeeNumber ?? "",
+      position: employeeProfile?.position ?? "",
+      department: employeeProfile?.department ?? "",
+      avatarColor: avatarColor(authData.userId),
+    };
 
-  const registerMock = async (formValues) => {
-    // In this demo phase, registration doesn't persist a real account —
-    // it simply confirms the form succeeded and routes back to login.
-    await new Promise((resolve) => setTimeout(resolve, 700))
-    return { ...formValues }
-  }
+    setUser(sessionUser);
+    return sessionUser;
+  };
 
-  const logout = () => setUser(null)
+  const register = async (formValues) => {
+    const authData = await apiRegister(formValues);
+    const partial = { token: authData.token };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(partial));
 
-  const value = useMemo(() => ({ user, login, logout, registerMock }), [user])
+    let employeeProfile = null;
+    try {
+      employeeProfile = await getMe();
+    } catch {
+      // ignore
+    }
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+    const sessionUser = {
+      token: authData.token,
+      id: authData.userId,
+      username: authData.username,
+      email: authData.email,
+      role: authData.role,
+      firstName: employeeProfile?.firstName ?? formValues.firstName,
+      lastName: employeeProfile?.lastName ?? formValues.lastName,
+      employeeNumber: employeeProfile?.employeeNumber ?? "",
+      position: employeeProfile?.position ?? "",
+      department: employeeProfile?.department ?? "",
+      avatarColor: avatarColor(authData.userId),
+    };
+
+    setUser(sessionUser);
+    return sessionUser;
+  };
+
+  const logout = () => setUser(null);
+
+  const value = useMemo(() => ({ user, login, logout, register }), [user]);
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
-  const ctx = useContext(AuthContext)
-  if (!ctx) throw new Error('useAuth must be used within an AuthProvider')
-  return ctx
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used within an AuthProvider");
+  return ctx;
 }

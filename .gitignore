@@ -28,6 +28,7 @@ mobile/build/
 mobile/.gradle/
 mobile/app/build/
 mobile/local.properties
+mobile/tools/
 mobile/.cxx/
 mobile/captures/
 *.iml

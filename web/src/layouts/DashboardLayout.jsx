@@ -32,7 +32,18 @@ const LogoutIcon = () => (
 
 function initialsOf(user) {
   if (!user) return '?'
-  return `${user.firstName?.[0] ?? ''}${user.lastName?.[0] ?? ''}`.toUpperCase()
+  const first = user.firstName?.[0] ?? ''
+  const last = user.lastName?.[0] ?? ''
+  const initials = `${first}${last}`.toUpperCase()
+  if (initials) return initials
+
+  return (user.username?.[0] ?? user.email?.[0] ?? '?').toUpperCase()
+}
+
+function fullNameOf(user) {
+  if (!user) return 'User'
+  const name = `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim()
+  return name || user.username || user.email || 'User'
 }
 
 /**
@@ -78,7 +89,7 @@ const DashboardLayout = ({ navItems, activeKey, onNavigate, pageTitle, pageSubti
             </span>
             <div className="dash__sidebar-user-info">
               <p className="dash__sidebar-user-name">
-                {user?.firstName} {user?.lastName}
+                {fullNameOf(user)}
               </p>
               <p className="dash__sidebar-user-role">{user?.position}</p>
             </div>

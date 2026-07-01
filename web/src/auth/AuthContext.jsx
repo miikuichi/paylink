@@ -9,6 +9,14 @@ const STORAGE_KEY = "paylink.session";
 const AVATAR_COLORS = ["#7c3aed", "#b45309", "#0369a1", "#065f46", "#9f1239"];
 const avatarColor = (id) => AVATAR_COLORS[(id ?? 0) % AVATAR_COLORS.length];
 
+const fallbackFirstName = (userLike) => {
+  const fromUsername = userLike?.username?.trim();
+  if (fromUsername) return fromUsername;
+
+  const fromEmail = userLike?.email?.split("@")[0]?.trim();
+  return fromEmail || "there";
+};
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -22,6 +30,34 @@ export function AuthProvider({ children }) {
       localStorage.removeItem(STORAGE_KEY);
     }
   }, [user]);
+
+  useEffect(() => {
+    if (!user?.token) return;
+
+    const needsProfileHydration =
+      !user.firstName || !user.lastName || !user.employeeNumber;
+
+    if (!needsProfileHydration) return;
+
+    getMe()
+      .then((employeeProfile) => {
+        setUser((prev) => {
+          if (!prev) return prev;
+
+          return {
+            ...prev,
+            firstName: employeeProfile?.firstName ?? prev.firstName,
+            lastName: employeeProfile?.lastName ?? prev.lastName,
+            employeeNumber: employeeProfile?.employeeNumber ?? prev.employeeNumber,
+            position: employeeProfile?.position ?? prev.position,
+            department: employeeProfile?.department ?? prev.department,
+          };
+        });
+      })
+      .catch(() => {
+        // Some admin accounts may not have an employee profile.
+      });
+  }, [user?.token, user?.firstName, user?.lastName, user?.employeeNumber]);
 
   const login = async (username, password) => {
     const authData = await apiLogin(username, password);
@@ -42,7 +78,7 @@ export function AuthProvider({ children }) {
       username: authData.username,
       email: authData.email,
       role: authData.role,
-      firstName: employeeProfile?.firstName ?? "",
+      firstName: employeeProfile?.firstName ?? fallbackFirstName(authData),
       lastName: employeeProfile?.lastName ?? "",
       employeeNumber: employeeProfile?.employeeNumber ?? "",
       position: employeeProfile?.position ?? "",
@@ -72,7 +108,10 @@ export function AuthProvider({ children }) {
       username: authData.username,
       email: authData.email,
       role: authData.role,
-      firstName: employeeProfile?.firstName ?? formValues.firstName,
+      firstName:
+        employeeProfile?.firstName ??
+        formValues.firstName?.trim() ??
+        fallbackFirstName(authData),
       lastName: employeeProfile?.lastName ?? formValues.lastName,
       employeeNumber: employeeProfile?.employeeNumber ?? "",
       position: employeeProfile?.position ?? "",

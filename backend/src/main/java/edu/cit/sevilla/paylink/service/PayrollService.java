@@ -27,16 +27,19 @@ public class PayrollService {
     private final UserRepository userRepository;
     private final PayrollComputationService computationService;
 
+        @Transactional(readOnly = true)
     public List<PayrollDto> findByPayPeriod(Long payPeriodId) {
         return payrollRepository.findByPayPeriodIdOrderByCreatedAtAsc(payPeriodId)
                 .stream().map(PayrollDto::from).toList();
     }
 
+        @Transactional(readOnly = true)
     public List<PayrollDto> findByEmployeeUserId(Long userId) {
         return payrollRepository.findByEmployeeUserId(userId)
                 .stream().map(PayrollDto::from).toList();
     }
 
+        @Transactional(readOnly = true)
     public PayrollDto findById(Long id) {
         return payrollRepository.findById(id)
                 .map(PayrollDto::from)

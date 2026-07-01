@@ -15,26 +15,34 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class EmployeeService {
 
+    // NCR city-rate baseline (PHP 645/day x 26 working days)
+    private static final BigDecimal MIN_BASIC_RATE = new BigDecimal("16770.00");
+
     private final EmployeeRepository employeeRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Transactional(readOnly = true)
     public List<EmployeeDto> findAll() {
         return employeeRepository.findAll().stream().map(EmployeeDto::from).toList();
     }
 
+    @Transactional(readOnly = true)
     public EmployeeDto findById(Long id) {
         return employeeRepository.findById(id)
                 .map(EmployeeDto::from)
                 .orElseThrow(() -> new EntityNotFoundException("Employee not found: " + id));
     }
 
+    @Transactional(readOnly = true)
     public EmployeeDto findByUserId(Long userId) {
         return employeeRepository.findByUserId(userId)
                 .map(EmployeeDto::from)
@@ -60,13 +68,13 @@ public class EmployeeService {
 
         Employee employee = employeeRepository.save(Employee.builder()
                 .user(user)
-                .employeeNumber("EMP00000") // temporary; updated after ID is assigned
+            .employeeNumber("TMP-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase())
                 .firstName(req.firstName())
                 .lastName(req.lastName())
                 .position(req.position())
                 .department(req.department())
                 .dateHired(req.dateHired())
-                .basicRate(req.basicRate())
+                .basicRate(req.basicRate().max(MIN_BASIC_RATE))
                 .status(EmployeeStatus.ACTIVE)
                 .build());
 
@@ -90,7 +98,7 @@ public class EmployeeService {
         if (req.dateHired() != null)
             employee.setDateHired(req.dateHired());
         if (req.basicRate() != null)
-            employee.setBasicRate(req.basicRate());
+            employee.setBasicRate(req.basicRate().max(MIN_BASIC_RATE));
         if (req.status() != null)
             employee.setStatus(req.status());
 

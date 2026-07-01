@@ -174,13 +174,15 @@ const EmployeeDashboard = () => {
   const ytdNetPay = payrolls
     .slice(0, 4)
     .reduce((sum, r) => sum + (r.netPay ?? 0), 0);
+  const displayName =
+    user?.firstName?.trim() || user?.username || user?.email?.split("@")[0] || "there";
 
   return (
     <DashboardLayout
       navItems={NAV_ITEMS}
       activeKey={activeKey}
       onNavigate={setActiveKey}
-      pageTitle={`Welcome back, ${user?.firstName ?? "there"}`}
+      pageTitle={`Welcome back, ${displayName}`}
       pageSubtitle={user?.position}
       headerActions={
         <Button variant="gold" size="sm" icon={<DownloadIcon />}>
@@ -192,6 +194,17 @@ const EmployeeDashboard = () => {
 
       {activeKey === "overview" && (
         <>
+          {!loading && payrolls.length === 0 && payslips.length === 0 && (
+            <Panel
+              title="No payroll data yet"
+              subtitle="Your HR/admin team still needs to process your first payroll for the selected pay period."
+            >
+              <p style={{ opacity: 0.7, margin: 0 }}>
+                Once payroll is processed, your latest net pay, payslip breakdown, and payroll history will appear here.
+              </p>
+            </Panel>
+          )}
+
           <div className="dash-grid dash-grid--stats">
             <StatCard
               label="Latest Net Pay"

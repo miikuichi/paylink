@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -29,6 +30,9 @@ public class PayrollController {
 
     @GetMapping("/me")
     public List<PayrollDto> getMyPayrolls(@AuthenticationPrincipal User user) {
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
+        }
         return payrollService.findByEmployeeUserId(user.getId());
     }
 
@@ -40,6 +44,9 @@ public class PayrollController {
     @PostMapping("/process")
     public ResponseEntity<PayrollDto> process(@Valid @RequestBody ProcessPayrollRequest req,
             @AuthenticationPrincipal User user) {
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
+        }
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(payrollService.processPayroll(req, user.getId()));
     }

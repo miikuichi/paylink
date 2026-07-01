@@ -5,7 +5,7 @@ import Panel from "../../components/ui/Panel.jsx";
 import DataTable from "../../components/ui/DataTable.jsx";
 import Badge from "../../components/ui/Badge.jsx";
 import Button from "../../components/ui/Button.jsx";
-import { getEmployees, createEmployee } from "../../api/employees.js";
+import { getEmployees, createEmployee, updateEmployee } from "../../api/employees.js";
 import {
   getPayPeriods,
   createPayPeriod,
@@ -181,6 +181,12 @@ const HrDashboard = () => {
   const [empFormError, setEmpFormError] = useState("");
   const [empFormLoading, setEmpFormLoading] = useState(false);
 
+  const [showEditEmployee, setShowEditEmployee] = useState(false);
+  const [editingEmployee, setEditingEmployee] = useState(null);
+  const [editRateValue, setEditRateValue] = useState("");
+  const [editRateError, setEditRateError] = useState("");
+  const [editRateLoading, setEditRateLoading] = useState(false);
+
   const [showAddPeriod, setShowAddPeriod] = useState(false);
   const [periodForm, setPeriodForm] = useState({ startDate: "", endDate: "" });
   const [periodFormError, setPeriodFormError] = useState("");
@@ -309,6 +315,37 @@ const HrDashboard = () => {
     }
   };
 
+  const openEditRate = (employee) => {
+    setEditingEmployee(employee);
+    setEditRateValue(String(employee.basicRate ?? ""));
+    setEditRateError("");
+    setShowEditEmployee(true);
+  };
+
+  const handleUpdateRate = async (e) => {
+    e.preventDefault();
+    setEditRateError("");
+    const parsed = parseFloat(editRateValue);
+
+    if (Number.isNaN(parsed)) {
+      setEditRateError("Please enter a valid basic rate.");
+      return;
+    }
+
+    setEditRateLoading(true);
+    try {
+      await updateEmployee(editingEmployee.id, { basicRate: parsed });
+      setEmployees(await getEmployees());
+      setShowEditEmployee(false);
+      setEditingEmployee(null);
+      setEditRateValue("");
+    } catch (err) {
+      setEditRateError(err.message);
+    } finally {
+      setEditRateLoading(false);
+    }
+  };
+
   return (
     <DashboardLayout
       navItems={NAV_ITEMS}
@@ -336,6 +373,27 @@ const HrDashboard = () => {
 
       {activeKey === "overview" && (
         <>
+          {!loading && employees.length === 0 && (
+            <Panel
+              title="No employees yet"
+              subtitle="Create your first employee account to start payroll operations."
+              actions={
+                <Button
+                  variant="gold"
+                  size="sm"
+                  icon={<PlusIcon />}
+                  onClick={() => setShowAddEmployee(true)}
+                >
+                  New Employee
+                </Button>
+              }
+            >
+              <p style={{ opacity: 0.7, margin: 0 }}>
+                After adding employees, you can create a pay period, run payroll, and generate payslips from this dashboard.
+              </p>
+            </Panel>
+          )}
+
           <div className="dash-grid dash-grid--stats">
             <StatCard
               label="Active Employees"
@@ -404,6 +462,11 @@ const HrDashboard = () => {
                 ]}
                 rows={payrolls}
               />
+              {payrolls.length === 0 && (
+                <p style={{ opacity: 0.5, textAlign: "center", padding: 24 }}>
+                  No payroll records for this period yet.
+                </p>
+              )}
             </Panel>
 
             <Panel
@@ -432,6 +495,11 @@ const HrDashboard = () => {
                   </li>
                 ))}
               </ul>
+              {employees.length === 0 && (
+                <p style={{ opacity: 0.5, textAlign: "center", padding: 24 }}>
+                  No employees found.
+                </p>
+              )}
             </Panel>
           </div>
         </>
@@ -475,14 +543,50 @@ const HrDashboard = () => {
                   </Badge>
                 ),
               },
+              {
+                key: "actions",
+                header: "Actions",
+                align: "center",
+                render: (r) => (
+                  <Button size="sm" variant="ghost" onClick={() => openEditRate(r)}>
+                    Edit Rate
+                  </Button>
+                ),
+              },
             ]}
             rows={employees}
           />
+          {employees.length === 0 && (
+            <p style={{ opacity: 0.5, textAlign: "center", padding: 24 }}>
+              No employees yet.
+            </p>
+          )}
         </Panel>
       )}
 
       {activeKey === "payroll" && (
         <>
+          {payPeriods.length === 0 && (
+            <Panel
+              title="No pay periods yet"
+              subtitle="Create a pay period before processing payroll."
+              actions={
+                <Button
+                  variant="gold"
+                  size="sm"
+                  icon={<PlusIcon />}
+                  onClick={() => setShowAddPeriod(true)}
+                >
+                  New Period
+                </Button>
+              }
+            >
+              <p style={{ opacity: 0.7, margin: 0 }}>
+                Once a period exists, run payroll for active employees and generate payslips.
+              </p>
+            </Panel>
+          )}
+
           <div
             style={{
               display: "flex",
@@ -563,6 +667,11 @@ const HrDashboard = () => {
               ]}
               rows={employees.filter((e) => e.status === "ACTIVE")}
             />
+            {employees.filter((e) => e.status === "ACTIVE").length === 0 && (
+              <p style={{ opacity: 0.5, textAlign: "center", padding: 24 }}>
+                No active employees available for payroll processing.
+              </p>
+            )}
           </Panel>
 
           {payrolls.length > 0 && (
@@ -619,6 +728,14 @@ const HrDashboard = () => {
 
       {activeKey === "payslips" && (
         <>
+          {payPeriods.length === 0 && (
+            <Panel title="No pay periods yet" subtitle="Create a pay period to issue and view payslips.">
+              <p style={{ opacity: 0.7, margin: 0 }}>
+                Payslips are generated from processed payrolls within a specific pay period.
+              </p>
+            </Panel>
+          )}
+
           <div style={{ marginBottom: 16 }}>
             <select
               value={selectedPeriodId ?? ""}
@@ -801,6 +918,64 @@ const HrDashboard = () => {
                 </Button>
                 <Button type="submit" size="sm" loading={periodFormLoading}>
                   Create Period
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {showEditEmployee && (
+        <div className="modal-overlay" onClick={() => setShowEditEmployee(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h3 style={{ margin: "0 0 16px" }}>Edit Employee Rate</h3>
+            <p style={{ marginTop: 0, opacity: 0.7 }}>
+              {editingEmployee?.firstName} {editingEmployee?.lastName} ({editingEmployee?.employeeNumber})
+            </p>
+            {editRateError && (
+              <p style={{ color: "red", marginBottom: 8 }}>{editRateError}</p>
+            )}
+            <form
+              onSubmit={handleUpdateRate}
+              style={{ display: "flex", flexDirection: "column", gap: 10 }}
+            >
+              <label style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                <span style={{ fontSize: 13, fontWeight: 500 }}>Basic Rate (PHP/month)</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={editRateValue}
+                  onChange={(e) => setEditRateValue(e.target.value)}
+                  required
+                  style={{
+                    padding: "6px 10px",
+                    borderRadius: 6,
+                    border: "1px solid #d1d5db",
+                  }}
+                />
+              </label>
+              <p style={{ margin: 0, fontSize: 12, opacity: 0.65 }}>
+                Minimum enforced rate is based on the PH city minimum wage baseline.
+              </p>
+              <div
+                style={{
+                  display: "flex",
+                  gap: 8,
+                  justifyContent: "flex-end",
+                  marginTop: 4,
+                }}
+              >
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowEditEmployee(false)}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" size="sm" loading={editRateLoading}>
+                  Save Rate
                 </Button>
               </div>
             </form>

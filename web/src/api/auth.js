@@ -12,6 +12,7 @@ export async function apiRegister(form) {
     password: form.password,
     firstName: form.firstName,
     lastName: form.lastName,
+    role: form.role,
   })
   return data // { token, userId, username, email, role }
 }

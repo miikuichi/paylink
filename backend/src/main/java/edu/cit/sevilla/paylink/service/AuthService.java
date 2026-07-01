@@ -19,10 +19,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class AuthService {
+
+    // NCR city-rate baseline (PHP 645/day x 26 working days)
+    private static final BigDecimal MIN_BASIC_RATE = new BigDecimal("16770.00");
 
     private final UserRepository userRepository;
     private final EmployeeRepository employeeRepository;
@@ -39,13 +43,13 @@ public class AuthService {
             throw new IllegalArgumentException("Email is already registered");
         }
 
-        // Every new self-registered account is an Employee (Business Rule 1).
-        // Admin/HR accounts are provisioned separately by an existing admin.
+        Role requestedRole = request.role() == Role.ADMIN ? Role.ADMIN : Role.EMPLOYEE;
+
         User user = User.builder()
                 .username(request.username())
                 .email(request.email())
                 .passwordHash(passwordEncoder.encode(request.password()))
-                .role(Role.EMPLOYEE)
+            .role(requestedRole)
                 .enabled(true)
                 .build();
 
@@ -59,9 +63,10 @@ public class AuthService {
         // account.
         Employee employee = Employee.builder()
                 .user(user)
+            .employeeNumber("TMP-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase())
                 .firstName(request.firstName())
                 .lastName(request.lastName())
-                .basicRate(BigDecimal.ZERO)
+                .basicRate(MIN_BASIC_RATE)
                 .status(EmployeeStatus.ACTIVE)
                 .build();
         employee = employeeRepository.save(employee);

@@ -1,0 +1,173 @@
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.auth-form__row-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: -4px;
+}
+
+.auth-form__checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8125rem;
+  color: var(--ink-500);
+  cursor: pointer;
+  user-select: none;
+}
+
+.auth-form__checkbox input {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--maroon-600);
+  cursor: pointer;
+}
+
+.auth-form__link {
+  color: var(--maroon-600);
+  font-weight: 700;
+}
+.auth-form__link:hover {
+  text-decoration: underline;
+}
+
+.auth-form__link--muted {
+  color: var(--ink-500);
+  font-weight: 600;
+  font-size: 0.8125rem;
+}
+.auth-form__link--muted:hover {
+  color: var(--maroon-600);
+}
+
+.auth-form__name-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+@media (max-width: 480px) {
+  .auth-form__name-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.auth-form__terms {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  font-size: 0.8125rem;
+  color: var(--ink-500);
+  line-height: 1.5;
+}
+.auth-form__terms input {
+  margin-top: 3px;
+  width: 15px;
+  height: 15px;
+  accent-color: var(--maroon-600);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.auth-form__role-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.auth-form__role-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--ink-100);
+  background: var(--cream-50);
+  cursor: pointer;
+  text-align: left;
+  transition: all var(--duration-fast) var(--ease-smooth);
+}
+
+.auth-form__role-card:hover {
+  border-color: var(--gold-400);
+}
+
+.auth-form__role-card--active {
+  border-color: var(--gold-500);
+  background: var(--gold-100);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.18);
+}
+
+.auth-form__role-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: var(--maroon-800);
+}
+
+.auth-form__role-desc {
+  font-size: 0.75rem;
+  color: var(--ink-500);
+}
+
+/* ---- Demo credentials helper ---- */
+.auth-form__demo {
+  margin-top: 4px;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  background: var(--cream-200);
+  border: 1px dashed var(--gold-500);
+}
+
+.auth-form__demo-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--maroon-700);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 10px;
+}
+
+.auth-form__demo-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.auth-form__demo-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-card);
+  border: 1px solid var(--ink-100);
+  cursor: pointer;
+  text-align: left;
+  transition: all var(--duration-fast) var(--ease-smooth);
+}
+
+.auth-form__demo-chip:hover {
+  border-color: var(--gold-500);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.auth-form__demo-role {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--maroon-700);
+  font-family: var(--font-display);
+}
+
+.auth-form__demo-cred {
+  font-size: 0.75rem;
+  color: var(--ink-500);
+  font-family: 'Courier New', monospace;
+}

@@ -1,0 +1,26 @@
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo__mark {
+  filter: drop-shadow(0 4px 10px rgba(78, 15, 30, 0.25));
+  flex-shrink: 0;
+}
+
+.logo__wordmark {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.35rem;
+  color: var(--maroon-800);
+  letter-spacing: -0.02em;
+}
+
+.logo__wordmark--light {
+  color: var(--cream-50);
+}
+
+.logo__wordmark-accent {
+  color: var(--gold-500);
+}

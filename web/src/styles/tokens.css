@@ -1,0 +1,67 @@
+:root {
+  /* ---- Brand: Maroon ---- */
+  --maroon-900: #3D0A16;
+  --maroon-800: #4E0F1E;
+  --maroon-700: #6E1423;
+  --maroon-600: #841B2B;
+  --maroon-500: #A32341;
+  --maroon-400: #C1385A;
+
+  /* ---- Brand: Gold ---- */
+  --gold-700: #9C7519;
+  --gold-600: #B8862F;
+  --gold-500: #D4AF37;
+  --gold-400: #E4C567;
+  --gold-300: #EDD597;
+  --gold-100: #FBF0D9;
+
+  /* ---- Neutrals (warm, relaxing) ---- */
+  --cream-50: #FFFDFA;
+  --cream-100: #FBF7EF;
+  --cream-200: #F5EEE0;
+  --cream-300: #EDE2CC;
+
+  --ink-900: #241A17;
+  --ink-700: #453733;
+  --ink-500: #6B5D57;
+  --ink-300: #A79C8E;
+  --ink-100: #E7DCC9;
+
+  /* ---- Semantic ---- */
+  --color-success: #2F8F5B;
+  --color-success-bg: #E4F5EB;
+  --color-warning: #C2820F;
+  --color-warning-bg: #FBF0D9;
+  --color-error: #C0392B;
+  --color-error-bg: #FBE7E4;
+  --color-info: #2E6F9E;
+  --color-info-bg: #E5F0F8;
+
+  /* ---- Surfaces ---- */
+  --surface-app: linear-gradient(180deg, #FBF7EF 0%, #F5EEE0 100%);
+  --surface-card: #FFFFFF;
+  --surface-border: var(--ink-100);
+
+  /* ---- Typography ---- */
+  --font-display: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
+  --font-body: 'Inter', 'Segoe UI', sans-serif;
+
+  /* ---- Radius ---- */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-full: 999px;
+
+  /* ---- Shadows (warm-tinted, soft) ---- */
+  --shadow-sm: 0 2px 8px rgba(78, 15, 30, 0.06);
+  --shadow-md: 0 8px 24px rgba(78, 15, 30, 0.10);
+  --shadow-lg: 0 16px 48px rgba(78, 15, 30, 0.16);
+  --shadow-gold: 0 8px 20px rgba(212, 175, 55, 0.35);
+
+  /* ---- Motion ---- */
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 400ms;
+}

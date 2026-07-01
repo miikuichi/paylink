@@ -1,0 +1,38 @@
+.panel {
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.panel__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 22px 0;
+}
+
+.panel__title {
+  font-size: 1.0625rem;
+  font-weight: 800;
+  color: var(--maroon-900);
+}
+
+.panel__subtitle {
+  margin-top: 3px;
+  font-size: 0.8125rem;
+  color: var(--ink-500);
+}
+
+.panel__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.panel__body {
+  padding: 20px 22px 22px;
+}

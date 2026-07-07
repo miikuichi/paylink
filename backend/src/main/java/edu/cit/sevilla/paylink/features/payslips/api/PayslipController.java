@@ -1,8 +1,8 @@
-package edu.cit.sevilla.paylink.controller;
+package edu.cit.sevilla.paylink.features.payslips.api;
 
-import edu.cit.sevilla.paylink.dto.PayslipDto;
 import edu.cit.sevilla.paylink.entity.User;
-import edu.cit.sevilla.paylink.service.PayslipService;
+import edu.cit.sevilla.paylink.features.payslips.api.response.PayslipDto;
+import edu.cit.sevilla.paylink.features.payslips.application.PayslipService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -49,10 +49,10 @@
 
 ## Phase E: Payslips
 
-- [ ] E1 Move PayslipController to features/payslips/api
-- [ ] E2 Move PayslipService to features/payslips/application
-- [ ] E3 Move payslip DTOs/repository/domain to feature package as needed
-- [ ] E4 Payslip endpoint smoke tests
+- [x] E1 Move PayslipController to features/payslips/api
+- [x] E2 Move PayslipService to features/payslips/application
+- [x] E3 Move payslip DTOs/repository/domain to feature package as needed
+- [x] E4 Payslip endpoint smoke tests
 
 ## Phase F: Cleanup and Validation
 

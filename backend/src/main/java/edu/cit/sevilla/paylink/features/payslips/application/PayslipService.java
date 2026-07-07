@@ -1,11 +1,11 @@
-package edu.cit.sevilla.paylink.service;
+package edu.cit.sevilla.paylink.features.payslips.application;
 
-import edu.cit.sevilla.paylink.dto.PayslipDto;
-import edu.cit.sevilla.paylink.entity.Payslip;
 import edu.cit.sevilla.paylink.enums.PayrollStatus;
+import edu.cit.sevilla.paylink.features.payslips.api.response.PayslipDto;
+import edu.cit.sevilla.paylink.features.payslips.domain.Payslip;
+import edu.cit.sevilla.paylink.features.payslips.infrastructure.PayslipRepository;
 import edu.cit.sevilla.paylink.features.payroll.domain.Payroll;
 import edu.cit.sevilla.paylink.features.payroll.infrastructure.PayrollRepository;
-import edu.cit.sevilla.paylink.repository.PayslipRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

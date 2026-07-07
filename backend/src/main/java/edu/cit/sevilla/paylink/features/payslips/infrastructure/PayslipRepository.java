@@ -1,6 +1,6 @@
-package edu.cit.sevilla.paylink.repository;
+package edu.cit.sevilla.paylink.features.payslips.infrastructure;
 
-import edu.cit.sevilla.paylink.entity.Payslip;
+import edu.cit.sevilla.paylink.features.payslips.domain.Payslip;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

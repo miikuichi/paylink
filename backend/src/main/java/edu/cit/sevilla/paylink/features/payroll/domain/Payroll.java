@@ -1,9 +1,9 @@
 package edu.cit.sevilla.paylink.features.payroll.domain;
 
 import edu.cit.sevilla.paylink.enums.PayrollStatus;
-import edu.cit.sevilla.paylink.entity.Payslip;
 import edu.cit.sevilla.paylink.entity.User;
 import edu.cit.sevilla.paylink.features.employees.domain.Employee;
+import edu.cit.sevilla.paylink.features.payslips.domain.Payslip;
 import edu.cit.sevilla.paylink.features.payperiods.domain.PayPeriod;
 import jakarta.persistence.*;
 import lombok.*;

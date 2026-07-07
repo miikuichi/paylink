@@ -1,4 +1,4 @@
-package edu.cit.sevilla.paylink.service;
+package edu.cit.sevilla.paylink.features.payroll.application;
 
 import org.springframework.stereotype.Service;
 

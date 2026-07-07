@@ -40,12 +40,12 @@
 
 ## Phase D: Payroll
 
-- [ ] D1 Move PayrollController to features/payroll/api
-- [ ] D2 Move PayrollService and PayrollComputationService to features/payroll/application
-- [ ] D3 Move payroll DTOs to features/payroll/api/request and response
-- [ ] D4 Move PayrollRepository and PayrollItemRepository to features/payroll/infrastructure
-- [ ] D5 Move Payroll and PayrollItem entities to features/payroll/domain
-- [ ] D6 Payroll endpoint smoke tests
+- [x] D1 Move PayrollController to features/payroll/api
+- [x] D2 Move PayrollService and PayrollComputationService to features/payroll/application
+- [x] D3 Move payroll DTOs to features/payroll/api/request and response
+- [x] D4 Move PayrollRepository and PayrollItemRepository to features/payroll/infrastructure
+- [x] D5 Move Payroll and PayrollItem entities to features/payroll/domain
+- [x] D6 Payroll endpoint smoke tests
 
 ## Phase E: Payslips
 

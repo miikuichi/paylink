@@ -1,10 +1,10 @@
 package edu.cit.sevilla.paylink.service;
 
 import edu.cit.sevilla.paylink.dto.PayslipDto;
-import edu.cit.sevilla.paylink.entity.Payroll;
 import edu.cit.sevilla.paylink.entity.Payslip;
 import edu.cit.sevilla.paylink.enums.PayrollStatus;
-import edu.cit.sevilla.paylink.repository.PayrollRepository;
+import edu.cit.sevilla.paylink.features.payroll.domain.Payroll;
+import edu.cit.sevilla.paylink.features.payroll.infrastructure.PayrollRepository;
 import edu.cit.sevilla.paylink.repository.PayslipRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;

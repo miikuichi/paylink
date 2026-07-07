@@ -1,9 +1,9 @@
-package edu.cit.sevilla.paylink.controller;
+package edu.cit.sevilla.paylink.features.payroll.api;
 
-import edu.cit.sevilla.paylink.dto.PayrollDto;
-import edu.cit.sevilla.paylink.dto.ProcessPayrollRequest;
 import edu.cit.sevilla.paylink.entity.User;
-import edu.cit.sevilla.paylink.service.PayrollService;
+import edu.cit.sevilla.paylink.features.payroll.api.request.ProcessPayrollRequest;
+import edu.cit.sevilla.paylink.features.payroll.api.response.PayrollDto;
+import edu.cit.sevilla.paylink.features.payroll.application.PayrollService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

@@ -1,15 +1,18 @@
-package edu.cit.sevilla.paylink.service;
+package edu.cit.sevilla.paylink.features.payroll.application;
 
-import edu.cit.sevilla.paylink.dto.PayrollDto;
-import edu.cit.sevilla.paylink.dto.ProcessPayrollRequest;
-import edu.cit.sevilla.paylink.entity.*;
 import edu.cit.sevilla.paylink.enums.PayrollItemType;
 import edu.cit.sevilla.paylink.enums.PayrollStatus;
 import edu.cit.sevilla.paylink.features.employees.domain.Employee;
 import edu.cit.sevilla.paylink.features.employees.infrastructure.EmployeeRepository;
 import edu.cit.sevilla.paylink.features.payperiods.domain.PayPeriod;
 import edu.cit.sevilla.paylink.features.payperiods.infrastructure.PayPeriodRepository;
-import edu.cit.sevilla.paylink.repository.*;
+import edu.cit.sevilla.paylink.entity.User;
+import edu.cit.sevilla.paylink.features.payroll.api.request.ProcessPayrollRequest;
+import edu.cit.sevilla.paylink.features.payroll.api.response.PayrollDto;
+import edu.cit.sevilla.paylink.features.payroll.domain.Payroll;
+import edu.cit.sevilla.paylink.features.payroll.domain.PayrollItem;
+import edu.cit.sevilla.paylink.features.payroll.infrastructure.PayrollRepository;
+import edu.cit.sevilla.paylink.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

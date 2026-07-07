@@ -1,5 +1,6 @@
 package edu.cit.sevilla.paylink.entity;
 
+import edu.cit.sevilla.paylink.features.payroll.domain.Payroll;
 import jakarta.persistence.*;
 import lombok.*;
 

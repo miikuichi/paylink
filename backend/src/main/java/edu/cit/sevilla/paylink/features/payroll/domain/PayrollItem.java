@@ -1,4 +1,4 @@
-package edu.cit.sevilla.paylink.entity;
+package edu.cit.sevilla.paylink.features.payroll.domain;
 
 import edu.cit.sevilla.paylink.enums.PayrollItemType;
 import jakarta.persistence.*;

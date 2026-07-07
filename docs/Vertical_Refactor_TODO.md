@@ -56,7 +56,7 @@
 
 ## Phase F: Cleanup and Validation
 
-- [ ] F1 Remove old empty layer-based backend folders
-- [ ] F2 Full backend tests
-- [ ] F3 End-to-end smoke flow (auth -> employees -> pay period -> payroll -> payslip)
-- [ ] F4 Update architecture docs
+- [x] F1 Remove old empty layer-based backend folders
+- [x] F2 Full backend tests
+- [x] F3 End-to-end smoke flow (auth -> employees -> pay period -> payroll -> payslip)
+- [x] F4 Update architecture docs

@@ -27,18 +27,18 @@ Allow users to create an account and sign in, then receive a JWT session for sec
 
 ### Spring Boot Components
 
-- Controller: backend/src/main/java/edu/cit/sevilla/paylink/controller/AuthController.java
-- Service: backend/src/main/java/edu/cit/sevilla/paylink/service/AuthService.java
+- Controller: backend/src/main/java/edu/cit/sevilla/paylink/features/auth/api/AuthController.java
+- Service: backend/src/main/java/edu/cit/sevilla/paylink/features/auth/application/AuthService.java
 - Repositories:
   - backend/src/main/java/edu/cit/sevilla/paylink/repository/UserRepository.java
-  - backend/src/main/java/edu/cit/sevilla/paylink/repository/EmployeeRepository.java
+  - backend/src/main/java/edu/cit/sevilla/paylink/features/employees/infrastructure/EmployeeRepository.java
 - Entities:
   - backend/src/main/java/edu/cit/sevilla/paylink/entity/User.java
-  - backend/src/main/java/edu/cit/sevilla/paylink/entity/Employee.java
+  - backend/src/main/java/edu/cit/sevilla/paylink/features/employees/domain/Employee.java
 - DTOs:
-  - backend/src/main/java/edu/cit/sevilla/paylink/dto/LoginRequest.java
-  - backend/src/main/java/edu/cit/sevilla/paylink/dto/RegisterRequest.java
-  - backend/src/main/java/edu/cit/sevilla/paylink/dto/AuthResponse.java
+  - backend/src/main/java/edu/cit/sevilla/paylink/features/auth/api/request/LoginRequest.java
+  - backend/src/main/java/edu/cit/sevilla/paylink/features/auth/api/request/RegisterRequest.java
+  - backend/src/main/java/edu/cit/sevilla/paylink/features/auth/api/response/AuthResponse.java
 
 ### API Endpoints
 
@@ -83,14 +83,14 @@ Allow HR/Admin to view, create, and update employee records.
 
 ### Spring Boot Components
 
-- Controller: backend/src/main/java/edu/cit/sevilla/paylink/controller/EmployeeController.java
-- Service: backend/src/main/java/edu/cit/sevilla/paylink/service/EmployeeService.java
-- Repository: backend/src/main/java/edu/cit/sevilla/paylink/repository/EmployeeRepository.java
-- Entity: backend/src/main/java/edu/cit/sevilla/paylink/entity/Employee.java
+- Controller: backend/src/main/java/edu/cit/sevilla/paylink/features/employees/api/EmployeeController.java
+- Service: backend/src/main/java/edu/cit/sevilla/paylink/features/employees/application/EmployeeService.java
+- Repository: backend/src/main/java/edu/cit/sevilla/paylink/features/employees/infrastructure/EmployeeRepository.java
+- Entity: backend/src/main/java/edu/cit/sevilla/paylink/features/employees/domain/Employee.java
 - DTOs:
-  - backend/src/main/java/edu/cit/sevilla/paylink/dto/EmployeeDto.java
-  - backend/src/main/java/edu/cit/sevilla/paylink/dto/CreateEmployeeRequest.java
-  - backend/src/main/java/edu/cit/sevilla/paylink/dto/UpdateEmployeeRequest.java
+  - backend/src/main/java/edu/cit/sevilla/paylink/features/employees/api/response/EmployeeDto.java
+  - backend/src/main/java/edu/cit/sevilla/paylink/features/employees/api/request/CreateEmployeeRequest.java
+  - backend/src/main/java/edu/cit/sevilla/paylink/features/employees/api/request/UpdateEmployeeRequest.java
 
 ### API Endpoints
 
@@ -135,13 +135,13 @@ Define payroll windows (start/end dates) for payroll processing and reporting.
 
 ### Spring Boot Components
 
-- Controller: backend/src/main/java/edu/cit/sevilla/paylink/controller/PayPeriodController.java
-- Service: backend/src/main/java/edu/cit/sevilla/paylink/service/PayPeriodService.java
-- Repository: backend/src/main/java/edu/cit/sevilla/paylink/repository/PayPeriodRepository.java
-- Entity: backend/src/main/java/edu/cit/sevilla/paylink/entity/PayPeriod.java
+- Controller: backend/src/main/java/edu/cit/sevilla/paylink/features/payperiods/api/PayPeriodController.java
+- Service: backend/src/main/java/edu/cit/sevilla/paylink/features/payperiods/application/PayPeriodService.java
+- Repository: backend/src/main/java/edu/cit/sevilla/paylink/features/payperiods/infrastructure/PayPeriodRepository.java
+- Entity: backend/src/main/java/edu/cit/sevilla/paylink/features/payperiods/domain/PayPeriod.java
 - DTOs:
-  - backend/src/main/java/edu/cit/sevilla/paylink/dto/PayPeriodDto.java
-  - backend/src/main/java/edu/cit/sevilla/paylink/dto/CreatePayPeriodRequest.java
+  - backend/src/main/java/edu/cit/sevilla/paylink/features/payperiods/api/response/PayPeriodDto.java
+  - backend/src/main/java/edu/cit/sevilla/paylink/features/payperiods/api/request/CreatePayPeriodRequest.java
 
 ### API Endpoints
 
@@ -184,19 +184,19 @@ Compute payroll for an employee within a selected pay period and store computed 
 
 ### Spring Boot Components
 
-- Controller: backend/src/main/java/edu/cit/sevilla/paylink/controller/PayrollController.java
+- Controller: backend/src/main/java/edu/cit/sevilla/paylink/features/payroll/api/PayrollController.java
 - Services:
-  - backend/src/main/java/edu/cit/sevilla/paylink/service/PayrollService.java
-  - backend/src/main/java/edu/cit/sevilla/paylink/service/PayrollComputationService.java
+  - backend/src/main/java/edu/cit/sevilla/paylink/features/payroll/application/PayrollService.java
+  - backend/src/main/java/edu/cit/sevilla/paylink/features/payroll/application/PayrollComputationService.java
 - Repositories:
-  - backend/src/main/java/edu/cit/sevilla/paylink/repository/PayrollRepository.java
-  - backend/src/main/java/edu/cit/sevilla/paylink/repository/PayrollItemRepository.java
+  - backend/src/main/java/edu/cit/sevilla/paylink/features/payroll/infrastructure/PayrollRepository.java
+  - backend/src/main/java/edu/cit/sevilla/paylink/features/payroll/infrastructure/PayrollItemRepository.java
 - Entities:
-  - backend/src/main/java/edu/cit/sevilla/paylink/entity/Payroll.java
-  - backend/src/main/java/edu/cit/sevilla/paylink/entity/PayrollItem.java
+  - backend/src/main/java/edu/cit/sevilla/paylink/features/payroll/domain/Payroll.java
+  - backend/src/main/java/edu/cit/sevilla/paylink/features/payroll/domain/PayrollItem.java
 - DTOs:
-  - backend/src/main/java/edu/cit/sevilla/paylink/dto/PayrollDto.java
-  - backend/src/main/java/edu/cit/sevilla/paylink/dto/ProcessPayrollRequest.java
+  - backend/src/main/java/edu/cit/sevilla/paylink/features/payroll/api/response/PayrollDto.java
+  - backend/src/main/java/edu/cit/sevilla/paylink/features/payroll/api/request/ProcessPayrollRequest.java
 
 ### API Endpoints
 
@@ -243,11 +243,11 @@ Generate final payslips from processed payroll and allow HR/employee to view pay
 
 ### Spring Boot Components
 
-- Controller: backend/src/main/java/edu/cit/sevilla/paylink/controller/PayslipController.java
-- Service: backend/src/main/java/edu/cit/sevilla/paylink/service/PayslipService.java
-- Repository: backend/src/main/java/edu/cit/sevilla/paylink/repository/PayslipRepository.java
-- Entity: backend/src/main/java/edu/cit/sevilla/paylink/entity/Payslip.java
-- DTO: backend/src/main/java/edu/cit/sevilla/paylink/dto/PayslipDto.java
+- Controller: backend/src/main/java/edu/cit/sevilla/paylink/features/payslips/api/PayslipController.java
+- Service: backend/src/main/java/edu/cit/sevilla/paylink/features/payslips/application/PayslipService.java
+- Repository: backend/src/main/java/edu/cit/sevilla/paylink/features/payslips/infrastructure/PayslipRepository.java
+- Entity: backend/src/main/java/edu/cit/sevilla/paylink/features/payslips/domain/Payslip.java
+- DTO: backend/src/main/java/edu/cit/sevilla/paylink/features/payslips/api/response/PayslipDto.java
 
 ### API Endpoints
 
@@ -272,7 +272,7 @@ Generate final payslips from processed payroll and allow HR/employee to view pay
 
 - web/src/api/payslips.js: web payslip API bindings.
 - mobile/app/src/main/java/edu/cit/sevilla/paylink/mobile/data/network/PayslipApi.kt: mobile payslip endpoints.
-- backend/src/main/java/edu/cit/sevilla/paylink/service/PayslipService.java: payslip business constraints.
+- backend/src/main/java/edu/cit/sevilla/paylink/features/payslips/application/PayslipService.java: payslip business constraints.
 
 ---
 
@@ -376,11 +376,11 @@ rectangle "Clients" {
 rectangle "Backend" {
   component "Spring Boot REST API" as A
   component "Spring Security + JWT Filter" as SEC
-  component "AuthController + AuthService" as S1
-  component "EmployeeController + EmployeeService" as S2
-  component "PayPeriodController + PayPeriodService" as S3
-  component "PayrollController + PayrollService\n+ PayrollComputationService" as S4
-  component "PayslipController + PayslipService" as S5
+  component "features/auth\nAuthController + AuthService" as S1
+  component "features/employees\nEmployeeController + EmployeeService" as S2
+  component "features/payperiods\nPayPeriodController + PayPeriodService" as S3
+  component "features/payroll\nPayrollController + PayrollService\n+ PayrollComputationService" as S4
+  component "features/payslips\nPayslipController + PayslipService" as S5
   database "JPA Repositories" as R
 }
 

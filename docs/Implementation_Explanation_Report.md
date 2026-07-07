@@ -1,21 +1,23 @@
-# PayLink Implementation Explanation Report
+# PayLink Refactoring Report
 
-## Overview
+## 1. Overview
 
-This document summarizes the implemented PayLink system after the backend vertical-slice refactor.
+This report summarizes the refactored PayLink backend and its feature implementation.
 
-Scope:
+The backend was reorganized into a vertical-slice, feature-first structure for easier file management and enhanced readability of the project structure.
+
+The refactoring focused on the Spring Boot backend while preserving compatibility with the existing React web client, Android mobile client, and PostgreSQL database.
+
+Project scope covered by this report:
 
 - React web client
 - Android mobile client
 - Spring Boot backend
-- PostgreSQL database via JPA and Flyway
+- PostgreSQL database through JPA and Flyway
 
-## Architecture Summary
+## 2. Refactored Structure
 
-### Backend style
-
-The backend now follows feature-first vertical slices:
+The backend now follows feature-first vertical slices under the features package:
 
 - backend/src/main/java/edu/cit/sevilla/paylink/features/auth
 - backend/src/main/java/edu/cit/sevilla/paylink/features/employees
@@ -23,62 +25,82 @@ The backend now follows feature-first vertical slices:
 - backend/src/main/java/edu/cit/sevilla/paylink/features/payroll
 - backend/src/main/java/edu/cit/sevilla/paylink/features/payslips
 
-Each feature groups API, application service, domain model, and infrastructure repository in one module.
+Each feature groups related classes into these local layers when applicable:
 
-### Shared packages kept at root
+- api
+- api/request
+- api/response
+- application
+- domain
+- infrastructure
 
-These remain outside feature slices because they are cross-cutting or shared by multiple features:
+## 3. Shared Components
+
+Not every class was moved into a feature slice. Some packages remain at the root because they are cross-cutting or shared by multiple features:
 
 - backend/src/main/java/edu/cit/sevilla/paylink/security
-- backend/src/main/java/edu/cit/sevilla/paylink/repository (shared user repository)
-- backend/src/main/java/edu/cit/sevilla/paylink/entity (shared user entity)
+- backend/src/main/java/edu/cit/sevilla/paylink/repository
+- backend/src/main/java/edu/cit/sevilla/paylink/entity
 - backend/src/main/java/edu/cit/sevilla/paylink/enums
 - backend/src/main/java/edu/cit/sevilla/paylink/exception
 
-## Implemented Features
+## 4. Feature-by-Feature Details
 
-## 1) Authentication
+### 4.1 Authentication Slice
+
+Authentication was the first slice migrated and established the pattern used by the later features.
 
 Purpose:
 
-- register and login users
-- issue JWT tokens
+- register new users
+- authenticate existing users
+- return JWT-based auth responses for secured access
 
-Backend components:
+Refactored backend components:
 
-- backend/src/main/java/edu/cit/sevilla/paylink/features/auth/api/AuthController.java
-- backend/src/main/java/edu/cit/sevilla/paylink/features/auth/application/AuthService.java
-- backend/src/main/java/edu/cit/sevilla/paylink/features/auth/api/request/LoginRequest.java
-- backend/src/main/java/edu/cit/sevilla/paylink/features/auth/api/request/RegisterRequest.java
-- backend/src/main/java/edu/cit/sevilla/paylink/features/auth/api/response/AuthResponse.java
+- AuthController -> features/auth/api/AuthController.java
+- AuthService -> features/auth/application/AuthService.java
+- LoginRequest -> features/auth/api/request/LoginRequest.java
+- RegisterRequest -> features/auth/api/request/RegisterRequest.java
+- AuthResponse -> features/auth/api/response/AuthResponse.java
 
-Endpoints:
+Primary endpoints:
 
 - POST /api/auth/register
 - POST /api/auth/login
 
-Tables involved:
+Primary data touched:
 
 - users
 - employees
 
-## 2) Employee Management
+Refactoring effect:
+
+- auth contracts and logic are now in one feature folder
+- auth DTOs are co-located with auth API endpoints
+- cross-cutting security integration remains intact through shared security components
+
+### 4.2 Employee Slice
+
+The employee capability was then grouped into one feature module.
 
 Purpose:
 
-- list, view, create, and update employee profiles
+- list employee records for HR workflows
+- fetch employee profiles, including self-profile view
+- create and update employee information
 
-Backend components:
+Refactored backend components:
 
-- backend/src/main/java/edu/cit/sevilla/paylink/features/employees/api/EmployeeController.java
-- backend/src/main/java/edu/cit/sevilla/paylink/features/employees/application/EmployeeService.java
-- backend/src/main/java/edu/cit/sevilla/paylink/features/employees/infrastructure/EmployeeRepository.java
-- backend/src/main/java/edu/cit/sevilla/paylink/features/employees/domain/Employee.java
-- backend/src/main/java/edu/cit/sevilla/paylink/features/employees/api/request/CreateEmployeeRequest.java
-- backend/src/main/java/edu/cit/sevilla/paylink/features/employees/api/request/UpdateEmployeeRequest.java
-- backend/src/main/java/edu/cit/sevilla/paylink/features/employees/api/response/EmployeeDto.java
+- EmployeeController -> features/employees/api/EmployeeController.java
+- EmployeeService -> features/employees/application/EmployeeService.java
+- CreateEmployeeRequest -> features/employees/api/request/CreateEmployeeRequest.java
+- UpdateEmployeeRequest -> features/employees/api/request/UpdateEmployeeRequest.java
+- EmployeeDto -> features/employees/api/response/EmployeeDto.java
+- Employee -> features/employees/domain/Employee.java
+- EmployeeRepository -> features/employees/infrastructure/EmployeeRepository.java
 
-Endpoints:
+Primary endpoints:
 
 - GET /api/employees
 - GET /api/employees/me
@@ -86,145 +108,134 @@ Endpoints:
 - POST /api/employees
 - PUT /api/employees/{id}
 
-Table involved:
+Primary data touched:
 
 - employees
 
-## 3) Pay Period Management
+Refactoring effect:
+
+- employee CRUD flow is now self-contained in one feature slice
+- request and response contracts are easier to find and maintain
+- endpoint-to-repository path can be traced without leaving the feature directory
+
+### 4.3 Pay Period Slice
+
+Pay period management was migrated next.
 
 Purpose:
 
-- define payroll periods and update period status
+- create payroll periods
+- list and retrieve payroll period records
+- update payroll period status lifecycle
 
-Backend components:
+Refactored backend components:
 
-- backend/src/main/java/edu/cit/sevilla/paylink/features/payperiods/api/PayPeriodController.java
-- backend/src/main/java/edu/cit/sevilla/paylink/features/payperiods/application/PayPeriodService.java
-- backend/src/main/java/edu/cit/sevilla/paylink/features/payperiods/infrastructure/PayPeriodRepository.java
-- backend/src/main/java/edu/cit/sevilla/paylink/features/payperiods/domain/PayPeriod.java
-- backend/src/main/java/edu/cit/sevilla/paylink/features/payperiods/api/request/CreatePayPeriodRequest.java
-- backend/src/main/java/edu/cit/sevilla/paylink/features/payperiods/api/response/PayPeriodDto.java
+- PayPeriodController -> features/payperiods/api/PayPeriodController.java
+- PayPeriodService -> features/payperiods/application/PayPeriodService.java
+- CreatePayPeriodRequest -> features/payperiods/api/request/CreatePayPeriodRequest.java
+- PayPeriodDto -> features/payperiods/api/response/PayPeriodDto.java
+- PayPeriod -> features/payperiods/domain/PayPeriod.java
+- PayPeriodRepository -> features/payperiods/infrastructure/PayPeriodRepository.java
 
-Endpoints:
+Primary endpoints:
 
 - GET /api/pay-periods
 - GET /api/pay-periods/{id}
 - POST /api/pay-periods
 - PATCH /api/pay-periods/{id}/status
 
-Table involved:
+Primary data touched:
 
 - pay_periods
 
-## 4) Payroll Processing
+Refactoring effect:
+
+- pay period scheduling logic is now isolated from payroll computation internals
+- status update behavior is managed inside one cohesive slice
+- future changes to period policies are less likely to affect unrelated modules
+
+### 4.4 Payroll Slice
+
+Payroll processing was migrated after the supporting features were already organized.
 
 Purpose:
 
 - process payroll for an employee in a selected pay period
-- compute gross pay, statutory deductions, and net pay
+- compute gross pay, deductions, and net pay
+- expose payroll records for HR and employee views
 
-Backend components:
+Refactored backend components:
 
-- backend/src/main/java/edu/cit/sevilla/paylink/features/payroll/api/PayrollController.java
-- backend/src/main/java/edu/cit/sevilla/paylink/features/payroll/application/PayrollService.java
-- backend/src/main/java/edu/cit/sevilla/paylink/features/payroll/application/PayrollComputationService.java
-- backend/src/main/java/edu/cit/sevilla/paylink/features/payroll/infrastructure/PayrollRepository.java
-- backend/src/main/java/edu/cit/sevilla/paylink/features/payroll/infrastructure/PayrollItemRepository.java
-- backend/src/main/java/edu/cit/sevilla/paylink/features/payroll/domain/Payroll.java
-- backend/src/main/java/edu/cit/sevilla/paylink/features/payroll/domain/PayrollItem.java
-- backend/src/main/java/edu/cit/sevilla/paylink/features/payroll/api/request/ProcessPayrollRequest.java
-- backend/src/main/java/edu/cit/sevilla/paylink/features/payroll/api/response/PayrollDto.java
-- backend/src/main/java/edu/cit/sevilla/paylink/features/payroll/api/response/PayrollItemDto.java
+- PayrollController -> features/payroll/api/PayrollController.java
+- PayrollService -> features/payroll/application/PayrollService.java
+- PayrollComputationService -> features/payroll/application/PayrollComputationService.java
+- ProcessPayrollRequest -> features/payroll/api/request/ProcessPayrollRequest.java
+- PayrollDto -> features/payroll/api/response/PayrollDto.java
+- PayrollItemDto -> features/payroll/api/response/PayrollItemDto.java
+- Payroll -> features/payroll/domain/Payroll.java
+- PayrollItem -> features/payroll/domain/PayrollItem.java
+- PayrollRepository -> features/payroll/infrastructure/PayrollRepository.java
+- PayrollItemRepository -> features/payroll/infrastructure/PayrollItemRepository.java
 
-Endpoints:
+Primary endpoints:
 
 - GET /api/payrolls?payPeriodId={id}
 - GET /api/payrolls/me
 - GET /api/payrolls/{id}
 - POST /api/payrolls/process
 
-Tables involved:
+Primary data touched:
 
 - payrolls
 - payroll_items
 
-## 5) Payslip Generation and Viewing
+Refactoring effect:
+
+- payroll computation and payroll persistence are now co-located
+- high-change business rules are easier to maintain and test within one slice
+- endpoint, DTO, domain, and repository changes can be reviewed as one feature unit
+
+### 4.5 Payslip Slice
+
+The final business slice migrated was payslips.
 
 Purpose:
 
-- generate payslips from processed payroll
-- support HR and employee payslip retrieval flows
+- generate payslips from processed payroll data
+- list and retrieve payslips for HR operations
+- support employee self-service payslip retrieval
 
-Backend components:
+Refactored backend components:
 
-- backend/src/main/java/edu/cit/sevilla/paylink/features/payslips/api/PayslipController.java
-- backend/src/main/java/edu/cit/sevilla/paylink/features/payslips/application/PayslipService.java
-- backend/src/main/java/edu/cit/sevilla/paylink/features/payslips/infrastructure/PayslipRepository.java
-- backend/src/main/java/edu/cit/sevilla/paylink/features/payslips/domain/Payslip.java
-- backend/src/main/java/edu/cit/sevilla/paylink/features/payslips/api/response/PayslipDto.java
+- PayslipController -> features/payslips/api/PayslipController.java
+- PayslipService -> features/payslips/application/PayslipService.java
+- PayslipDto -> features/payslips/api/response/PayslipDto.java
+- Payslip -> features/payslips/domain/Payslip.java
+- PayslipRepository -> features/payslips/infrastructure/PayslipRepository.java
 
-Endpoints:
+Primary endpoints:
 
 - GET /api/payslips?payPeriodId={id}
 - GET /api/payslips/me
 - GET /api/payslips/{id}
 - POST /api/payslips/generate/{payrollId}
 
-Table involved:
+Primary data touched:
 
 - payslips
 
-## 6) Security and Role Routing
+Refactoring effect:
 
-Purpose:
+- payslip generation and retrieval are now isolated from payroll internals
+- HR and employee retrieval paths remain behaviorally consistent
+- this completed the end-to-end feature slicing from auth through final payroll output
 
-- enforce route access by role
-- validate JWT on secured endpoints
+## 5. Validation Summary
 
-Core files:
+Validation was performed after migration to confirm all core flows still function correctly:
 
-- backend/src/main/java/edu/cit/sevilla/paylink/security/SecurityConfig.java
-- backend/src/main/java/edu/cit/sevilla/paylink/security/JwtAuthenticationFilter.java
-- backend/src/main/java/edu/cit/sevilla/paylink/entity/User.java
-- backend/src/main/java/edu/cit/sevilla/paylink/enums/Role.java
-
-## Client Responsibilities
-
-Web:
-
-- web/src/api/client.js
-- web/src/api/auth.js
-- web/src/api/employees.js
-- web/src/api/payroll.js
-- web/src/api/payslips.js
-
-Mobile:
-
-- mobile/app/src/main/java/edu/cit/sevilla/paylink/mobile/data/network
-- mobile/app/src/main/java/edu/cit/sevilla/paylink/mobile/data/repo
-- mobile/app/src/main/java/edu/cit/sevilla/paylink/mobile/ui/screens
-
-## Validation Results
-
-Phase-by-phase validations completed:
-
-- backend tests executed successfully after each feature migration
-- endpoint smoke tests executed successfully for each feature
-
-Final end-to-end flow validated:
-
-1. auth register/login
-2. employee create and employee self fetch
-3. pay period create
-4. payroll process and employee payroll self fetch
-5. payslip generate and employee payslip self fetch
-
-Result:
-
-- all core flows returned successful responses and persisted data correctly
-
-## Notes for Submission
-
-- Architecture is now feature-sliced in backend features package.
-- Shared packages remain intentionally for cross-cutting concerns.
-- The repository includes incremental commits per feature migration stage.
+1. register and login
+2. create employee and fetch employee self data
+3. create pay period
+4. process payroll and fetch employee payroll history
+5. generate payslip and fetch employee payslip data

@@ -1,10 +1,10 @@
-package edu.cit.sevilla.paylink.service;
+package edu.cit.sevilla.paylink.features.payperiods.application;
 
-import edu.cit.sevilla.paylink.dto.CreatePayPeriodRequest;
-import edu.cit.sevilla.paylink.dto.PayPeriodDto;
-import edu.cit.sevilla.paylink.entity.PayPeriod;
 import edu.cit.sevilla.paylink.enums.PayPeriodStatus;
-import edu.cit.sevilla.paylink.repository.PayPeriodRepository;
+import edu.cit.sevilla.paylink.features.payperiods.api.request.CreatePayPeriodRequest;
+import edu.cit.sevilla.paylink.features.payperiods.api.response.PayPeriodDto;
+import edu.cit.sevilla.paylink.features.payperiods.domain.PayPeriod;
+import edu.cit.sevilla.paylink.features.payperiods.infrastructure.PayPeriodRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

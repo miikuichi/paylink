@@ -1,7 +1,7 @@
-package edu.cit.sevilla.paylink.dto;
+package edu.cit.sevilla.paylink.features.payperiods.api.response;
 
-import edu.cit.sevilla.paylink.entity.PayPeriod;
 import edu.cit.sevilla.paylink.enums.PayPeriodStatus;
+import edu.cit.sevilla.paylink.features.payperiods.domain.PayPeriod;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

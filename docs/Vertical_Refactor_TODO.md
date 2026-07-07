@@ -31,12 +31,12 @@
 
 ## Phase C: Pay Periods
 
-- [ ] C1 Move PayPeriodController to features/payperiods/api
-- [ ] C2 Move PayPeriodService to features/payperiods/application
-- [ ] C3 Move pay-period DTOs to features/payperiods/api/request and response
-- [ ] C4 Move PayPeriodRepository to features/payperiods/infrastructure
-- [ ] C5 Move PayPeriod entity to features/payperiods/domain
-- [ ] C6 Pay period endpoint smoke tests
+- [x] C1 Move PayPeriodController to features/payperiods/api
+- [x] C2 Move PayPeriodService to features/payperiods/application
+- [x] C3 Move pay-period DTOs to features/payperiods/api/request and response
+- [x] C4 Move PayPeriodRepository to features/payperiods/infrastructure
+- [x] C5 Move PayPeriod entity to features/payperiods/domain
+- [x] C6 Pay period endpoint smoke tests
 
 ## Phase D: Payroll
 

@@ -1,9 +1,9 @@
-package edu.cit.sevilla.paylink.controller;
+package edu.cit.sevilla.paylink.features.payperiods.api;
 
-import edu.cit.sevilla.paylink.dto.CreatePayPeriodRequest;
-import edu.cit.sevilla.paylink.dto.PayPeriodDto;
 import edu.cit.sevilla.paylink.enums.PayPeriodStatus;
-import edu.cit.sevilla.paylink.service.PayPeriodService;
+import edu.cit.sevilla.paylink.features.payperiods.api.request.CreatePayPeriodRequest;
+import edu.cit.sevilla.paylink.features.payperiods.api.response.PayPeriodDto;
+import edu.cit.sevilla.paylink.features.payperiods.application.PayPeriodService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

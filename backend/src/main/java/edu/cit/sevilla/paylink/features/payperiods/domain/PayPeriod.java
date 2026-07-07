@@ -1,4 +1,4 @@
-package edu.cit.sevilla.paylink.entity;
+package edu.cit.sevilla.paylink.features.payperiods.domain;
 
 import edu.cit.sevilla.paylink.enums.PayPeriodStatus;
 import jakarta.persistence.*;

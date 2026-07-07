@@ -1,6 +1,6 @@
-package edu.cit.sevilla.paylink.repository;
+package edu.cit.sevilla.paylink.features.payperiods.infrastructure;
 
-import edu.cit.sevilla.paylink.entity.PayPeriod;
+import edu.cit.sevilla.paylink.features.payperiods.domain.PayPeriod;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

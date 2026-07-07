@@ -5,6 +5,8 @@ import edu.cit.sevilla.paylink.dto.ProcessPayrollRequest;
 import edu.cit.sevilla.paylink.entity.*;
 import edu.cit.sevilla.paylink.enums.PayrollItemType;
 import edu.cit.sevilla.paylink.enums.PayrollStatus;
+import edu.cit.sevilla.paylink.features.employees.domain.Employee;
+import edu.cit.sevilla.paylink.features.employees.infrastructure.EmployeeRepository;
 import edu.cit.sevilla.paylink.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;

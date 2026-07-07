@@ -1,6 +1,6 @@
-package edu.cit.sevilla.paylink.dto;
+package edu.cit.sevilla.paylink.features.employees.api.response;
 
-import edu.cit.sevilla.paylink.entity.Employee;
+import edu.cit.sevilla.paylink.features.employees.domain.Employee;
 import edu.cit.sevilla.paylink.enums.EmployeeStatus;
 
 import java.math.BigDecimal;

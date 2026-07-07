@@ -1,13 +1,13 @@
-package edu.cit.sevilla.paylink.service;
+package edu.cit.sevilla.paylink.features.employees.application;
 
-import edu.cit.sevilla.paylink.dto.CreateEmployeeRequest;
-import edu.cit.sevilla.paylink.dto.EmployeeDto;
-import edu.cit.sevilla.paylink.dto.UpdateEmployeeRequest;
-import edu.cit.sevilla.paylink.entity.Employee;
 import edu.cit.sevilla.paylink.entity.User;
 import edu.cit.sevilla.paylink.enums.EmployeeStatus;
 import edu.cit.sevilla.paylink.enums.Role;
-import edu.cit.sevilla.paylink.repository.EmployeeRepository;
+import edu.cit.sevilla.paylink.features.employees.api.request.CreateEmployeeRequest;
+import edu.cit.sevilla.paylink.features.employees.api.request.UpdateEmployeeRequest;
+import edu.cit.sevilla.paylink.features.employees.api.response.EmployeeDto;
+import edu.cit.sevilla.paylink.features.employees.domain.Employee;
+import edu.cit.sevilla.paylink.features.employees.infrastructure.EmployeeRepository;
 import edu.cit.sevilla.paylink.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;

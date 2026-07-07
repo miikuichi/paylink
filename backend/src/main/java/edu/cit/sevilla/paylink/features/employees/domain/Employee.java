@@ -1,5 +1,6 @@
-package edu.cit.sevilla.paylink.entity;
+package edu.cit.sevilla.paylink.features.employees.domain;
 
+import edu.cit.sevilla.paylink.entity.User;
 import edu.cit.sevilla.paylink.enums.EmployeeStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

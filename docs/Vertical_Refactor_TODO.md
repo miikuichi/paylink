@@ -22,12 +22,12 @@
 
 ## Phase B: Employees
 
-- [ ] B1 Move EmployeeController to features/employees/api
-- [ ] B2 Move EmployeeService to features/employees/application
-- [ ] B3 Move employee DTOs to features/employees/api/request and response
-- [ ] B4 Move EmployeeRepository to features/employees/infrastructure
-- [ ] B5 Move Employee entity to features/employees/domain (if feature-owned)
-- [ ] B6 Employee endpoint smoke tests
+- [x] B1 Move EmployeeController to features/employees/api
+- [x] B2 Move EmployeeService to features/employees/application
+- [x] B3 Move employee DTOs to features/employees/api/request and response
+- [x] B4 Move EmployeeRepository to features/employees/infrastructure
+- [x] B5 Move Employee entity to features/employees/domain (feature-owned)
+- [x] B6 Employee endpoint smoke tests
 
 ## Phase C: Pay Periods
 

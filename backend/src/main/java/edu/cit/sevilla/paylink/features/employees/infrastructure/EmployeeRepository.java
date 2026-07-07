@@ -1,6 +1,6 @@
-package edu.cit.sevilla.paylink.repository;
+package edu.cit.sevilla.paylink.features.employees.infrastructure;
 
-import edu.cit.sevilla.paylink.entity.Employee;
+import edu.cit.sevilla.paylink.features.employees.domain.Employee;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

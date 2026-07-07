@@ -1,10 +1,10 @@
-package edu.cit.sevilla.paylink.controller;
+package edu.cit.sevilla.paylink.features.employees.api;
 
-import edu.cit.sevilla.paylink.dto.CreateEmployeeRequest;
-import edu.cit.sevilla.paylink.dto.EmployeeDto;
-import edu.cit.sevilla.paylink.dto.UpdateEmployeeRequest;
 import edu.cit.sevilla.paylink.entity.User;
-import edu.cit.sevilla.paylink.service.EmployeeService;
+import edu.cit.sevilla.paylink.features.employees.api.request.CreateEmployeeRequest;
+import edu.cit.sevilla.paylink.features.employees.api.request.UpdateEmployeeRequest;
+import edu.cit.sevilla.paylink.features.employees.api.response.EmployeeDto;
+import edu.cit.sevilla.paylink.features.employees.application.EmployeeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

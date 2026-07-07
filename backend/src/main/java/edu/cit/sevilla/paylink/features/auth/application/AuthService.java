@@ -1,8 +1,8 @@
-package edu.cit.sevilla.paylink.service;
+package edu.cit.sevilla.paylink.features.auth.application;
 
-import edu.cit.sevilla.paylink.dto.AuthResponse;
-import edu.cit.sevilla.paylink.dto.LoginRequest;
-import edu.cit.sevilla.paylink.dto.RegisterRequest;
+import edu.cit.sevilla.paylink.features.auth.api.request.LoginRequest;
+import edu.cit.sevilla.paylink.features.auth.api.request.RegisterRequest;
+import edu.cit.sevilla.paylink.features.auth.api.response.AuthResponse;
 import edu.cit.sevilla.paylink.entity.Employee;
 import edu.cit.sevilla.paylink.entity.User;
 import edu.cit.sevilla.paylink.enums.EmployeeStatus;

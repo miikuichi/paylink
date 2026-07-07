@@ -1,4 +1,4 @@
-package edu.cit.sevilla.paylink.dto;
+package edu.cit.sevilla.paylink.features.auth.api.request;
 
 import edu.cit.sevilla.paylink.enums.Role;
 import jakarta.validation.constraints.Email;

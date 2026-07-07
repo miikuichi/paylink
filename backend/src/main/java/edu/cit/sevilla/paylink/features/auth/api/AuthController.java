@@ -1,9 +1,9 @@
 package edu.cit.sevilla.paylink.features.auth.api;
 
-import edu.cit.sevilla.paylink.dto.AuthResponse;
-import edu.cit.sevilla.paylink.dto.LoginRequest;
-import edu.cit.sevilla.paylink.dto.RegisterRequest;
-import edu.cit.sevilla.paylink.service.AuthService;
+import edu.cit.sevilla.paylink.features.auth.api.request.LoginRequest;
+import edu.cit.sevilla.paylink.features.auth.api.request.RegisterRequest;
+import edu.cit.sevilla.paylink.features.auth.api.response.AuthResponse;
+import edu.cit.sevilla.paylink.features.auth.application.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

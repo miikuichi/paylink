@@ -1,4 +1,4 @@
-package edu.cit.sevilla.paylink.controller;
+package edu.cit.sevilla.paylink.features.auth.api;
 
 import edu.cit.sevilla.paylink.dto.AuthResponse;
 import edu.cit.sevilla.paylink.dto.LoginRequest;

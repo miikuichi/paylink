@@ -23,14 +23,13 @@ import edu.cit.sevilla.paylink.mobile.features.employees.data.repository.Employe
 import edu.cit.sevilla.paylink.mobile.features.payperiods.data.repository.PayPeriodRepository
 import edu.cit.sevilla.paylink.mobile.features.payroll.data.repository.PayrollRepository
 import edu.cit.sevilla.paylink.mobile.features.payslips.data.repository.PayslipRepository
-import edu.cit.sevilla.paylink.mobile.data.repo.DashboardRepository
 import edu.cit.sevilla.paylink.mobile.core.session.SessionStore
 import edu.cit.sevilla.paylink.mobile.core.navigation.NavRoutes
 import edu.cit.sevilla.paylink.mobile.features.auth.ui.AuthViewModel
 import edu.cit.sevilla.paylink.mobile.features.auth.ui.LoginScreen
 import edu.cit.sevilla.paylink.mobile.features.auth.ui.RegisterScreen
-import edu.cit.sevilla.paylink.mobile.ui.screens.dashboard.EmployeeDashboardScreen
-import edu.cit.sevilla.paylink.mobile.ui.screens.dashboard.EmployeeDashboardViewModel
+import edu.cit.sevilla.paylink.mobile.features.employee_dashboard.ui.EmployeeDashboardScreen
+import edu.cit.sevilla.paylink.mobile.features.employee_dashboard.ui.EmployeeDashboardViewModel
 import edu.cit.sevilla.paylink.mobile.features.hr_dashboard.ui.HrDashboardScreen
 import edu.cit.sevilla.paylink.mobile.features.hr_dashboard.ui.HrDashboardViewModel
 import edu.cit.sevilla.paylink.mobile.core.ui.theme.PayLinkTheme
@@ -40,31 +39,28 @@ fun PayLinkMobileApp(appContext: Context) {
     val sessionStore = remember { SessionStore(appContext) }
     val repository = remember {
         AuthRepository(
-        authApi = NetworkModule.authApi,
-        employeeApi = NetworkModule.employeeApi,
-        sessionStore = sessionStore,
+            authApi = NetworkModule.authApi,
+            employeeApi = NetworkModule.employeeApi,
+            sessionStore = sessionStore,
         )
     }
 
     val authViewModel: AuthViewModel = viewModel(
         factory = AuthViewModel.Factory(repository)
-    )    val dashboardRepository = remember {
-        DashboardRepository(
-            employeeApi = NetworkModule.employeeApi,
-            payrollApi = NetworkModule.payrollApi,
-            payslipApi = NetworkModule.payslipApi,
-            payPeriodApi = NetworkModule.payPeriodApi,
-        )
-    }
+    )
 
-    // Feature repositories for HR Dashboard
+    // Feature repositories for Employee and HR Dashboards
     val employeeRepository = remember { EmployeeRepository(NetworkModule.employeeApi) }
     val payPeriodRepository = remember { PayPeriodRepository(NetworkModule.payPeriodApi) }
     val payrollRepository = remember { PayrollRepository(NetworkModule.payrollApi) }
     val payslipRepository = remember { PayslipRepository(NetworkModule.payslipApi) }
 
     val employeeDashboardViewModel: EmployeeDashboardViewModel = viewModel(
-        factory = EmployeeDashboardViewModel.Factory(dashboardRepository),
+        factory = EmployeeDashboardViewModel.Factory(
+            employeeRepository,
+            payrollRepository,
+            payslipRepository,
+        ),
     )
     val hrDashboardViewModel: HrDashboardViewModel = viewModel(
         factory = HrDashboardViewModel.Factory(

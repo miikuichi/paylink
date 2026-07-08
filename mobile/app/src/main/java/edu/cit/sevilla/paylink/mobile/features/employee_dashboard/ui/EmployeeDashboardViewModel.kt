@@ -1,12 +1,14 @@
-package edu.cit.sevilla.paylink.mobile.ui.screens.dashboard
+package edu.cit.sevilla.paylink.mobile.features.employee_dashboard.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import edu.cit.sevilla.paylink.mobile.data.model.EmployeeProfile
-import edu.cit.sevilla.paylink.mobile.data.model.PayrollDto
-import edu.cit.sevilla.paylink.mobile.data.model.PayslipDto
-import edu.cit.sevilla.paylink.mobile.data.repo.DashboardRepository
+import edu.cit.sevilla.paylink.mobile.features.employees.data.model.EmployeeProfile
+import edu.cit.sevilla.paylink.mobile.features.payroll.data.model.PayrollDto
+import edu.cit.sevilla.paylink.mobile.features.payslips.data.model.PayslipDto
+import edu.cit.sevilla.paylink.mobile.features.employees.data.repository.EmployeeRepository
+import edu.cit.sevilla.paylink.mobile.features.payroll.data.repository.PayrollRepository
+import edu.cit.sevilla.paylink.mobile.features.payslips.data.repository.PayslipRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,7 +23,9 @@ data class EmployeeDashboardState(
 )
 
 class EmployeeDashboardViewModel(
-    private val repository: DashboardRepository,
+    private val employeeRepository: EmployeeRepository,
+    private val payrollRepository: PayrollRepository,
+    private val payslipRepository: PayslipRepository,
 ) : ViewModel() {
     private val _state = MutableStateFlow(EmployeeDashboardState())
     val state: StateFlow<EmployeeDashboardState> = _state.asStateFlow()
@@ -37,9 +41,10 @@ class EmployeeDashboardViewModel(
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true, errorMessage = "")
             runCatching {
-                val profile = repository.getMyProfile(token)
-                val payrolls = repository.getMyPayrolls(token)
-                val payslips = repository.getMyPayslips(token)
+                val bearerToken = "Bearer $token"
+                val profile = employeeRepository.getMe(bearerToken)
+                val payrolls = payrollRepository.getMyPayrolls(bearerToken)
+                val payslips = payslipRepository.getMyPayslips(bearerToken)
                 EmployeeDashboardState(
                     isLoading = false,
                     profile = profile,
@@ -61,10 +66,18 @@ class EmployeeDashboardViewModel(
         _state.value = _state.value.copy(errorMessage = "")
     }
 
-    class Factory(private val repository: DashboardRepository) : ViewModelProvider.Factory {
+    class Factory(
+        private val employeeRepository: EmployeeRepository,
+        private val payrollRepository: PayrollRepository,
+        private val payslipRepository: PayslipRepository,
+    ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return EmployeeDashboardViewModel(repository) as T
+            return EmployeeDashboardViewModel(
+                employeeRepository,
+                payrollRepository,
+                payslipRepository,
+            ) as T
         }
     }
 }

@@ -3,7 +3,7 @@ import { useAuth } from './features/auth/AuthContext.jsx'
 import ProtectedRoute from './features/auth/ProtectedRoute.jsx'
 import LoginPage from './features/auth/LoginPage.jsx'
 import RegisterPage from './features/auth/RegisterPage.jsx'
-import HrDashboard from './pages/hr/HrDashboard.jsx'
+import { HrDashboard } from './features/hr-dashboard/index.js'
 import EmployeeDashboard from './pages/employee/EmployeeDashboard.jsx'
 
 function HomeRedirect() {

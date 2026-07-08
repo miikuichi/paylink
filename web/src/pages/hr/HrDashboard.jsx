@@ -6,10 +6,11 @@ import DataTable from "../../shared/components/ui/DataTable.jsx";
 import Badge from "../../shared/components/ui/Badge.jsx";
 import Button from "../../shared/components/ui/Button.jsx";
 import {
-  getEmployees,
-  createEmployee,
-  updateEmployee,
-} from "../../api/employees.js";
+  useEmployees,
+  EmployeeTable,
+  AddEmployeeModal,
+  EditEmployeeModal,
+} from "../../features/employees/index.js";
 import {
   getPayPeriods,
   createPayPeriod,
@@ -163,33 +164,34 @@ const statusTone = (status) =>
 const HrDashboard = () => {
   const [activeKey, setActiveKey] = useState("overview");
 
-  const [employees, setEmployees] = useState([]);
+  const {
+    employees,
+    setEmployees,
+    refresh: refreshEmployees,
+    showAddEmployee,
+    setShowAddEmployee,
+    empForm,
+    setEmpForm,
+    empFormError,
+    empFormLoading,
+    handleAddEmployee,
+    showEditEmployee,
+    setShowEditEmployee,
+    editingEmployee,
+    editRateValue,
+    setEditRateValue,
+    editRateError,
+    editRateLoading,
+    openEditRate,
+    handleUpdateRate,
+  } = useEmployees();
+
   const [payPeriods, setPayPeriods] = useState([]);
   const [payrolls, setPayrolls] = useState([]);
   const [payslips, setPayslips] = useState([]);
   const [selectedPeriodId, setSelectedPeriodId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
-  const [showAddEmployee, setShowAddEmployee] = useState(false);
-  const [empForm, setEmpForm] = useState({
-    username: "",
-    email: "",
-    password: "",
-    firstName: "",
-    lastName: "",
-    position: "",
-    department: "",
-    basicRate: "",
-  });
-  const [empFormError, setEmpFormError] = useState("");
-  const [empFormLoading, setEmpFormLoading] = useState(false);
-
-  const [showEditEmployee, setShowEditEmployee] = useState(false);
-  const [editingEmployee, setEditingEmployee] = useState(null);
-  const [editRateValue, setEditRateValue] = useState("");
-  const [editRateError, setEditRateError] = useState("");
-  const [editRateLoading, setEditRateLoading] = useState(false);
 
   const [showAddPeriod, setShowAddPeriod] = useState(false);
   const [periodForm, setPeriodForm] = useState({ startDate: "", endDate: "" });
@@ -198,16 +200,14 @@ const HrDashboard = () => {
 
   const [processError, setProcessError] = useState("");
   const [processLoading, setProcessLoading] = useState(false);
-
   const loadBase = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
-      const [emps, periods] = await Promise.all([
-        getEmployees(),
+      const [, periods] = await Promise.all([
+        refreshEmployees(),
         getPayPeriods(),
       ]);
-      setEmployees(emps);
       setPayPeriods(periods);
       if (periods.length > 0)
         setSelectedPeriodId((prev) => prev ?? periods[0].id);
@@ -216,7 +216,7 @@ const HrDashboard = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [refreshEmployees]);
 
   useEffect(() => {
     loadBase();
@@ -241,35 +241,6 @@ const HrDashboard = () => {
   const processedCount = payrolls.filter(
     (r) => r.status === "PROCESSED",
   ).length;
-
-  const handleAddEmployee = async (e) => {
-    e.preventDefault();
-    setEmpFormError("");
-    setEmpFormLoading(true);
-    try {
-      await createEmployee({
-        ...empForm,
-        basicRate: parseFloat(empForm.basicRate),
-      });
-      setShowAddEmployee(false);
-      setEmpForm({
-        username: "",
-        email: "",
-        password: "",
-        firstName: "",
-        lastName: "",
-        position: "",
-        department: "",
-        basicRate: "",
-      });
-      setEmployees(await getEmployees());
-    } catch (err) {
-      setEmpFormError(err.message);
-    } finally {
-      setEmpFormLoading(false);
-    }
-  };
-
   const handleAddPeriod = async (e) => {
     e.preventDefault();
     setPeriodFormError("");
@@ -318,38 +289,6 @@ const HrDashboard = () => {
       alert(err.message);
     }
   };
-
-  const openEditRate = (employee) => {
-    setEditingEmployee(employee);
-    setEditRateValue(String(employee.basicRate ?? ""));
-    setEditRateError("");
-    setShowEditEmployee(true);
-  };
-
-  const handleUpdateRate = async (e) => {
-    e.preventDefault();
-    setEditRateError("");
-    const parsed = parseFloat(editRateValue);
-
-    if (Number.isNaN(parsed)) {
-      setEditRateError("Please enter a valid basic rate.");
-      return;
-    }
-
-    setEditRateLoading(true);
-    try {
-      await updateEmployee(editingEmployee.id, { basicRate: parsed });
-      setEmployees(await getEmployees());
-      setShowEditEmployee(false);
-      setEditingEmployee(null);
-      setEditRateValue("");
-    } catch (err) {
-      setEditRateError(err.message);
-    } finally {
-      setEditRateLoading(false);
-    }
-  };
-
   return (
     <DashboardLayout
       navItems={NAV_ITEMS}
@@ -508,9 +447,7 @@ const HrDashboard = () => {
             </Panel>
           </div>
         </>
-      )}
-
-      {activeKey === "employees" && (
+      )}      {activeKey === "employees" && (
         <Panel
           title="Employees"
           subtitle="All registered employees"
@@ -525,51 +462,7 @@ const HrDashboard = () => {
             </Button>
           }
         >
-          <DataTable
-            columns={[
-              { key: "employeeNumber", header: "ID" },
-              { key: "firstName", header: "First Name" },
-              { key: "lastName", header: "Last Name" },
-              { key: "position", header: "Position" },
-              { key: "department", header: "Department" },
-              {
-                key: "basicRate",
-                header: "Basic Rate",
-                align: "right",
-                render: (r) => currency(r.basicRate),
-              },
-              {
-                key: "status",
-                header: "Status",
-                align: "center",
-                render: (r) => (
-                  <Badge tone={r.status === "ACTIVE" ? "success" : "neutral"}>
-                    {r.status}
-                  </Badge>
-                ),
-              },
-              {
-                key: "actions",
-                header: "Actions",
-                align: "center",
-                render: (r) => (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => openEditRate(r)}
-                  >
-                    Edit Rate
-                  </Button>
-                ),
-              },
-            ]}
-            rows={employees}
-          />
-          {employees.length === 0 && (
-            <p style={{ opacity: 0.5, textAlign: "center", padding: 24 }}>
-              No employees yet.
-            </p>
-          )}
+          <EmployeeTable employees={employees} onEditRate={openEditRate} />
         </Panel>
       )}
 
@@ -804,79 +697,15 @@ const HrDashboard = () => {
             )}
           </Panel>
         </>
-      )}
-
-      {showAddEmployee && (
-        <div
-          className="modal-overlay"
-          onClick={() => setShowAddEmployee(false)}
-        >
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ margin: "0 0 16px" }}>New Employee</h3>
-            {empFormError && (
-              <p style={{ color: "red", marginBottom: 8 }}>{empFormError}</p>
-            )}
-            <form
-              onSubmit={handleAddEmployee}
-              style={{ display: "flex", flexDirection: "column", gap: 10 }}
-            >
-              {[
-                { label: "Username", field: "username" },
-                { label: "Email", field: "email", type: "email" },
-                { label: "Password", field: "password", type: "password" },
-                { label: "First Name", field: "firstName" },
-                { label: "Last Name", field: "lastName" },
-                { label: "Position", field: "position" },
-                { label: "Department", field: "department" },
-                {
-                  label: "Basic Rate (₱/month)",
-                  field: "basicRate",
-                  type: "number",
-                },
-              ].map(({ label, field, type = "text" }) => (
-                <label
-                  key={field}
-                  style={{ display: "flex", flexDirection: "column", gap: 4 }}
-                >
-                  <span style={{ fontSize: 13, fontWeight: 500 }}>{label}</span>
-                  <input
-                    type={type}
-                    value={empForm[field]}
-                    onChange={(e) =>
-                      setEmpForm((f) => ({ ...f, [field]: e.target.value }))
-                    }
-                    required
-                    style={{
-                      padding: "6px 10px",
-                      borderRadius: 6,
-                      border: "1px solid #d1d5db",
-                    }}
-                  />
-                </label>
-              ))}
-              <div
-                style={{
-                  display: "flex",
-                  gap: 8,
-                  justifyContent: "flex-end",
-                  marginTop: 4,
-                }}
-              >
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowAddEmployee(false)}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" size="sm" loading={empFormLoading}>
-                  Save Employee
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
+      )}      {showAddEmployee && (
+        <AddEmployeeModal
+          form={empForm}
+          setForm={setEmpForm}
+          error={empFormError}
+          loading={empFormLoading}
+          onSubmit={handleAddEmployee}
+          onClose={() => setShowAddEmployee(false)}
+        />
       )}
 
       {showAddPeriod && (
@@ -937,73 +766,16 @@ const HrDashboard = () => {
             </form>
           </div>
         </div>
-      )}
-
-      {showEditEmployee && (
-        <div
-          className="modal-overlay"
-          onClick={() => setShowEditEmployee(false)}
-        >
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ margin: "0 0 16px" }}>Edit Employee Rate</h3>
-            <p style={{ marginTop: 0, opacity: 0.7 }}>
-              {editingEmployee?.firstName} {editingEmployee?.lastName} (
-              {editingEmployee?.employeeNumber})
-            </p>
-            {editRateError && (
-              <p style={{ color: "red", marginBottom: 8 }}>{editRateError}</p>
-            )}
-            <form
-              onSubmit={handleUpdateRate}
-              style={{ display: "flex", flexDirection: "column", gap: 10 }}
-            >
-              <label
-                style={{ display: "flex", flexDirection: "column", gap: 4 }}
-              >
-                <span style={{ fontSize: 13, fontWeight: 500 }}>
-                  Basic Rate (PHP/month)
-                </span>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={editRateValue}
-                  onChange={(e) => setEditRateValue(e.target.value)}
-                  required
-                  style={{
-                    padding: "6px 10px",
-                    borderRadius: 6,
-                    border: "1px solid #d1d5db",
-                  }}
-                />
-              </label>
-              <p style={{ margin: 0, fontSize: 12, opacity: 0.65 }}>
-                Minimum enforced rate is based on the PH city minimum wage
-                baseline.
-              </p>
-              <div
-                style={{
-                  display: "flex",
-                  gap: 8,
-                  justifyContent: "flex-end",
-                  marginTop: 4,
-                }}
-              >
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowEditEmployee(false)}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" size="sm" loading={editRateLoading}>
-                  Save Rate
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
+      )}      {showEditEmployee && (
+        <EditEmployeeModal
+          employee={editingEmployee}
+          rateValue={editRateValue}
+          setRateValue={setEditRateValue}
+          error={editRateError}
+          loading={editRateLoading}
+          onSubmit={handleUpdateRate}
+          onClose={() => setShowEditEmployee(false)}
+        />
       )}
     </DashboardLayout>
   );

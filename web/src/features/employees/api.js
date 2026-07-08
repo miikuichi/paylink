@@ -1,4 +1,4 @@
-import client from '../shared/api/client.js'
+import client from '../../shared/api/client.js'
 
 export const getMe = () => client.get('/employees/me').then((r) => r.data)
 export const getEmployees = () => client.get('/employees').then((r) => r.data)

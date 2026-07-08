@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { apiLogin, apiRegister } from "./api.js";
-import { getMe } from "../../api/employees.js";
+import { getMe } from "../employees/api.js";
 
 const AuthContext = createContext(null);
 const STORAGE_KEY = "paylink.session";

@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
-import DashboardLayout from "../../layouts/DashboardLayout.jsx";
-import StatCard from "../../components/ui/StatCard.jsx";
-import Panel from "../../components/ui/Panel.jsx";
-import DataTable from "../../components/ui/DataTable.jsx";
-import Badge from "../../components/ui/Badge.jsx";
-import Button from "../../components/ui/Button.jsx";
+import DashboardLayout from "../../shared/layouts/DashboardLayout.jsx";
+import StatCard from "../../shared/components/ui/StatCard.jsx";
+import Panel from "../../shared/components/ui/Panel.jsx";
+import DataTable from "../../shared/components/ui/DataTable.jsx";
+import Badge from "../../shared/components/ui/Badge.jsx";
+import Button from "../../shared/components/ui/Button.jsx";
 import {
   getEmployees,
   createEmployee,

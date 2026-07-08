@@ -1,6 +1,8 @@
 import Logo from '../components/ui/Logo.jsx'
 import './AuthLayout.css'
 
+// Note: this file lives in shared/layouts/ — relative imports are correct.
+
 const HIGHLIGHTS = [
   {
     title: 'Centralized records',

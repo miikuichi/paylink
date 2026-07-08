@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import AuthLayout from "../../layouts/AuthLayout.jsx";
-import TextField from "../../components/ui/TextField.jsx";
-import Button from "../../components/ui/Button.jsx";
-import Alert from "../../components/ui/Alert.jsx";
+import AuthLayout from "../../shared/layouts/AuthLayout.jsx";
+import TextField from "../../shared/components/ui/TextField.jsx";
+import Button from "../../shared/components/ui/Button.jsx";
+import Alert from "../../shared/components/ui/Alert.jsx";
 import { useAuth } from "../../auth/AuthContext.jsx";
 import "./AuthForm.css";
 

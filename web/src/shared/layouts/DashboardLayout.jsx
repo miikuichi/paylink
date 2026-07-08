@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Logo from "../components/ui/Logo.jsx";
 import Button from "../components/ui/Button.jsx";
-import { useAuth } from "../auth/AuthContext.jsx";
+import { useAuth } from "../../auth/AuthContext.jsx";
 import "./DashboardLayout.css";
 
 const MenuIcon = () => (

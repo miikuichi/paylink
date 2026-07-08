@@ -1,4 +1,4 @@
-import client from './client.js'
+import client from '../shared/api/client.js'
 
 export const getMyPayslips = () => client.get('/payslips/me').then((r) => r.data)
 export const getPayslipsByPeriod = (payPeriodId) =>

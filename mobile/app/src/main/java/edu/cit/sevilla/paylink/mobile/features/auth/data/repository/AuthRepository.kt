@@ -1,13 +1,14 @@
-package edu.cit.sevilla.paylink.mobile.data.repo
+package edu.cit.sevilla.paylink.mobile.features.auth.data.repository
 
 import com.google.gson.Gson
-import edu.cit.sevilla.paylink.mobile.data.model.AuthResponse
-import edu.cit.sevilla.paylink.mobile.data.model.LoginRequest
-import edu.cit.sevilla.paylink.mobile.data.model.RegisterRequest
-import edu.cit.sevilla.paylink.mobile.data.model.Session
-import edu.cit.sevilla.paylink.mobile.data.network.ApiError
-import edu.cit.sevilla.paylink.mobile.data.network.AuthApi
+import edu.cit.sevilla.paylink.mobile.features.auth.data.model.AuthResponse
+import edu.cit.sevilla.paylink.mobile.features.auth.data.model.LoginRequest
+import edu.cit.sevilla.paylink.mobile.features.auth.data.model.RegisterRequest
+import edu.cit.sevilla.paylink.mobile.features.auth.data.model.Session
+import edu.cit.sevilla.paylink.mobile.core.network.ApiError
+import edu.cit.sevilla.paylink.mobile.features.auth.data.network.AuthApi
 import edu.cit.sevilla.paylink.mobile.data.network.EmployeeApi
+import edu.cit.sevilla.paylink.mobile.core.session.SessionStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException

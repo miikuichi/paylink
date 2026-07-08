@@ -1,4 +1,4 @@
-package edu.cit.sevilla.paylink.mobile.data.model
+package edu.cit.sevilla.paylink.mobile.features.auth.data.model
 
 data class LoginRequest(
     val username: String,
@@ -20,22 +20,6 @@ data class AuthResponse(
     val username: String,
     val email: String,
     val role: String,
-)
-
-data class EmployeeProfile(
-    val id: Long,
-    val userId: Long,
-    val username: String,
-    val email: String,
-    val employeeNumber: String,
-    val firstName: String,
-    val lastName: String,
-    val position: String?,
-    val department: String?,
-    val dateHired: String?,
-    val basicRate: Double?,
-    val status: String,
-    val createdAt: String?,
 )
 
 data class Session(

@@ -9,7 +9,7 @@ import edu.cit.sevilla.paylink.mobile.data.model.PayrollDto
 import edu.cit.sevilla.paylink.mobile.data.model.PayslipDto
 import edu.cit.sevilla.paylink.mobile.data.model.ProcessPayrollRequest
 import edu.cit.sevilla.paylink.mobile.data.model.UpdateEmployeeRequest
-import edu.cit.sevilla.paylink.mobile.data.network.ApiError
+import edu.cit.sevilla.paylink.mobile.core.network.ApiError
 import edu.cit.sevilla.paylink.mobile.data.network.EmployeeApi
 import edu.cit.sevilla.paylink.mobile.data.network.PayPeriodApi
 import edu.cit.sevilla.paylink.mobile.data.network.PayrollApi

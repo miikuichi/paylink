@@ -1,11 +1,11 @@
-package edu.cit.sevilla.paylink.mobile.ui.screens.auth
+package edu.cit.sevilla.paylink.mobile.features.auth.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import edu.cit.sevilla.paylink.mobile.data.model.RegisterRequest
-import edu.cit.sevilla.paylink.mobile.data.model.Session
-import edu.cit.sevilla.paylink.mobile.data.repo.AuthRepository
+import edu.cit.sevilla.paylink.mobile.features.auth.data.model.RegisterRequest
+import edu.cit.sevilla.paylink.mobile.features.auth.data.model.Session
+import edu.cit.sevilla.paylink.mobile.features.auth.data.repository.AuthRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

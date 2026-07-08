@@ -1,4 +1,4 @@
-package edu.cit.sevilla.paylink.mobile.ui.screens.auth
+package edu.cit.sevilla.paylink.mobile.features.auth.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -29,13 +29,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import edu.cit.sevilla.paylink.mobile.data.model.Session
-import edu.cit.sevilla.paylink.mobile.ui.theme.Cream100
-import edu.cit.sevilla.paylink.mobile.ui.theme.Cream200
-import edu.cit.sevilla.paylink.mobile.ui.theme.Gold300
-import edu.cit.sevilla.paylink.mobile.ui.theme.Gold500
-import edu.cit.sevilla.paylink.mobile.ui.theme.Maroon700
-import edu.cit.sevilla.paylink.mobile.ui.theme.Maroon800
+import edu.cit.sevilla.paylink.mobile.features.auth.data.model.Session
+import edu.cit.sevilla.paylink.mobile.core.ui.theme.Cream100
+import edu.cit.sevilla.paylink.mobile.core.ui.theme.Cream200
+import edu.cit.sevilla.paylink.mobile.core.ui.theme.Gold300
+import edu.cit.sevilla.paylink.mobile.core.ui.theme.Gold500
+import edu.cit.sevilla.paylink.mobile.core.ui.theme.Maroon700
+import edu.cit.sevilla.paylink.mobile.core.ui.theme.Maroon800
 
 @Composable
 fun RegisterScreen(

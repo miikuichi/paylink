@@ -1,7 +1,7 @@
-package edu.cit.sevilla.paylink.mobile.data.network
+package edu.cit.sevilla.paylink.mobile.features.payperiods.data.network
 
-import edu.cit.sevilla.paylink.mobile.data.model.CreatePayPeriodRequest
-import edu.cit.sevilla.paylink.mobile.data.model.PayPeriodDto
+import edu.cit.sevilla.paylink.mobile.features.payperiods.data.model.CreatePayPeriodRequest
+import edu.cit.sevilla.paylink.mobile.features.payperiods.data.model.PayPeriodDto
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header

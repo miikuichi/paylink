@@ -1,7 +1,7 @@
-package edu.cit.sevilla.paylink.mobile.data.network
+package edu.cit.sevilla.paylink.mobile.features.payroll.data.network
 
-import edu.cit.sevilla.paylink.mobile.data.model.PayrollDto
-import edu.cit.sevilla.paylink.mobile.data.model.ProcessPayrollRequest
+import edu.cit.sevilla.paylink.mobile.features.payroll.data.model.PayrollDto
+import edu.cit.sevilla.paylink.mobile.features.payroll.data.model.ProcessPayrollRequest
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header

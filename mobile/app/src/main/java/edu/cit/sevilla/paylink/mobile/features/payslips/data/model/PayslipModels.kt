@@ -1,4 +1,6 @@
-package edu.cit.sevilla.paylink.mobile.data.model
+package edu.cit.sevilla.paylink.mobile.features.payslips.data.model
+
+import edu.cit.sevilla.paylink.mobile.features.payroll.data.model.PayrollItemDto
 
 data class PayslipDto(
     val id: Long,
@@ -20,11 +22,4 @@ data class PayslipDto(
     val deductions: List<PayrollItemDto>,
     val issuedAt: String?,
     val remarks: String?,
-)
-
-data class PayrollItemDto(
-    val id: Long,
-    val itemType: String,
-    val label: String,
-    val amount: Double,
 )

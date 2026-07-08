@@ -7,7 +7,7 @@ import edu.cit.sevilla.paylink.mobile.features.auth.data.model.RegisterRequest
 import edu.cit.sevilla.paylink.mobile.features.auth.data.model.Session
 import edu.cit.sevilla.paylink.mobile.core.network.ApiError
 import edu.cit.sevilla.paylink.mobile.features.auth.data.network.AuthApi
-import edu.cit.sevilla.paylink.mobile.data.network.EmployeeApi
+import edu.cit.sevilla.paylink.mobile.features.employees.data.network.EmployeeApi
 import edu.cit.sevilla.paylink.mobile.core.session.SessionStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

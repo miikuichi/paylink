@@ -1,10 +1,10 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
-import { useAuth } from './auth/AuthContext.jsx'
-import ProtectedRoute from './auth/ProtectedRoute.jsx'
-import LoginPage from './pages/auth/LoginPage.jsx'
-import RegisterPage from './pages/auth/RegisterPage.jsx'
-import HrDashboard from './pages/hr/HrDashboard.jsx'
-import EmployeeDashboard from './pages/employee/EmployeeDashboard.jsx'
+import { useAuth } from './features/auth/AuthContext.jsx'
+import ProtectedRoute from './features/auth/ProtectedRoute.jsx'
+import LoginPage from './features/auth/LoginPage.jsx'
+import RegisterPage from './features/auth/RegisterPage.jsx'
+import { HrDashboard } from './features/hr-dashboard/index.js'
+import { EmployeeDashboard } from './features/employee-dashboard/index.js'
 
 function HomeRedirect() {
   const { user } = useAuth()

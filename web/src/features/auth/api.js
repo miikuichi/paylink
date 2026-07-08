@@ -1,4 +1,4 @@
-import client from '../shared/api/client.js'
+import client from '../../shared/api/client.js'
 
 export async function apiLogin(username, password) {
   const { data } = await client.post('/auth/login', { username, password })

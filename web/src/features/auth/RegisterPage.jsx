@@ -4,7 +4,7 @@ import AuthLayout from "../../shared/layouts/AuthLayout.jsx";
 import TextField from "../../shared/components/ui/TextField.jsx";
 import Button from "../../shared/components/ui/Button.jsx";
 import Alert from "../../shared/components/ui/Alert.jsx";
-import { useAuth } from "../../auth/AuthContext.jsx";
+import { useAuth } from "./AuthContext.jsx";
 import "./AuthForm.css";
 
 const initialForm = {

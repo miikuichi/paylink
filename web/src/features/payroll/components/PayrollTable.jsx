@@ -2,6 +2,7 @@ import DataTable from '../../../shared/components/ui/DataTable.jsx'
 import Badge from '../../../shared/components/ui/Badge.jsx'
 import Button from '../../../shared/components/ui/Button.jsx'
 import Panel from '../../../shared/components/ui/Panel.jsx'
+import { GeneratePayslipAction } from '../../payslips/components/GeneratePayslipAction.jsx'
 
 const currency = (v) =>
   new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(v ?? 0)
@@ -61,7 +62,7 @@ export function PayrollTable({ employees, payrolls, processLoading, onProcess })
   )
 }
 
-export function PayrollResultsTable({ payrolls, onGeneratePayslip }) {
+export function PayrollResultsTable({ payrolls, onAfterGenerate }) {
   if (payrolls.length === 0) return null
   return (
     <Panel title="Payroll Results" subtitle="Computed for this period" style={{ marginTop: 16 }}>
@@ -90,14 +91,13 @@ export function PayrollResultsTable({ payrolls, onGeneratePayslip }) {
             key: 'payslip',
             header: 'Payslip',
             align: 'center',
-            render: (r) =>
-              r.hasPayslip ? (
-                <Badge tone="success">Issued</Badge>
-              ) : (
-                <Button size="sm" variant="ghost" onClick={() => onGeneratePayslip(r.id)}>
-                  Generate
-                </Button>
-              ),
+            render: (r) => (
+              <GeneratePayslipAction
+                payrollId={r.id}
+                hasPayslip={r.hasPayslip}
+                onSuccess={onAfterGenerate}
+              />
+            ),
           },
         ]}
         rows={payrolls}

@@ -18,7 +18,10 @@ import {
   PayrollResultsTable,
   AddPayPeriodModal,
 } from "../../features/payroll/index.js";
-import { getPayslipsByPeriod, generatePayslip } from "../../api/payslips.js";
+import {
+  usePayslips,
+  HrPayslipTable,
+} from "../../features/payslips/index.js";
 import "./Dashboard.css";
 
 const currency = (v) =>
@@ -206,9 +209,13 @@ const HrDashboard = () => {
     processLoading,
     handleProcessPayroll,
   } = usePayroll();
-
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");  const [payslips, setPayslips] = useState([]);
+  const [error, setError] = useState("");
+
+  const {
+    payslips,
+    refreshPayslipsByPeriod,
+  } = usePayslips();
   const loadBase = useCallback(async () => {
     setLoading(true);
     setError("");
@@ -229,34 +236,25 @@ const HrDashboard = () => {
   useEffect(() => {
     loadBase();
   }, [loadBase]);
-
   useEffect(() => {
     if (!selectedPeriodId) return;
     Promise.all([
       refreshPayrolls(selectedPeriodId),
-      getPayslipsByPeriod(selectedPeriodId),
-    ])
-      .then(([, ps]) => setPayslips(ps))
-      .catch(() => {});
+      refreshPayslipsByPeriod(selectedPeriodId),
+    ]).catch(() => {});
   }, [selectedPeriodId]);
+  const handleAfterGenerate = async () => {
+    await Promise.all([
+      refreshPayrolls(selectedPeriodId),
+      refreshPayslipsByPeriod(selectedPeriodId),
+    ]);
+  };
 
   const currentPeriod = payPeriods.find((p) => p.id === selectedPeriodId);
   const activeEmployees = employees.filter((e) => e.status === "ACTIVE").length;
   const totalNetPay = payrolls.reduce((sum, r) => sum + (r.netPay ?? 0), 0);
   const processedCount = payrolls.filter((r) => r.status === "PROCESSED").length;
 
-  const handleGeneratePayslip = async (payrollId) => {
-    try {
-      await generatePayslip(payrollId);
-      const [, ps] = await Promise.all([
-        refreshPayrolls(selectedPeriodId),
-        getPayslipsByPeriod(selectedPeriodId),
-      ]);
-      setPayslips(ps);
-    } catch (err) {
-      alert(err.message);
-    }
-  };
   return (
     <DashboardLayout
       navItems={NAV_ITEMS}
@@ -466,11 +464,9 @@ const HrDashboard = () => {
             onProcess={(empId) => handleProcessPayroll(empId, selectedPeriodId)}
           />
 
-          <PayrollResultsTable payrolls={payrolls} onGeneratePayslip={handleGeneratePayslip} />
+          <PayrollResultsTable payrolls={payrolls} onAfterGenerate={handleAfterGenerate} />
         </>
-      )}
-
-      {activeKey === "payslips" && (
+      )}      {activeKey === "payslips" && (
         <>
           {payPeriods.length === 0 && (
             <Panel
@@ -478,67 +474,22 @@ const HrDashboard = () => {
               subtitle="Create a pay period to issue and view payslips."
             >
               <p style={{ opacity: 0.7, margin: 0 }}>
-                Payslips are generated from processed payrolls within a specific
-                pay period.
+                Payslips are generated from processed payrolls within a specific pay period.
               </p>
             </Panel>
           )}
-
-          <div style={{ marginBottom: 16 }}>
-            <select
-              value={selectedPeriodId ?? ""}
-              onChange={(e) => setSelectedPeriodId(Number(e.target.value))}
-              style={{
-                padding: "6px 10px",
-                borderRadius: 6,
-                border: "1px solid #d1d5db",
-              }}
-            >
-              {payPeriods.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.label} ({p.status})
-                </option>
-              ))}
-            </select>
-          </div>
-          <Panel
-            title="Payslips"
+          <PayPeriodSelector
+            payPeriods={payPeriods}
+            selectedPeriodId={selectedPeriodId}
+            onSelect={setSelectedPeriodId}
+            onAddPeriod={() => setShowAddPeriod(true)}
+          />
+          <HrPayslipTable
+            payslips={payslips}
             subtitle={`Issued for ${currentPeriod?.label ?? "—"}`}
-          >
-            <DataTable
-              columns={[
-                { key: "employeeNumber", header: "Employee ID" },
-                { key: "employeeName", header: "Name" },
-                { key: "position", header: "Position" },
-                {
-                  key: "grossPay",
-                  header: "Gross Pay",
-                  align: "right",
-                  render: (r) => currency(r.grossPay),
-                },
-                {
-                  key: "totalDeductions",
-                  header: "Deductions",
-                  align: "right",
-                  render: (r) => currency(r.totalDeductions),
-                },
-                {
-                  key: "netPay",
-                  header: "Net Pay",
-                  align: "right",
-                  render: (r) => <strong>{currency(r.netPay)}</strong>,
-                },
-              ]}
-              rows={payslips}
-            />
-            {payslips.length === 0 && (
-              <p style={{ opacity: 0.5, textAlign: "center", padding: 24 }}>
-                No payslips issued yet.
-              </p>
-            )}
-          </Panel>
+          />
         </>
-      )}      {showAddEmployee && (
+      )}{showAddEmployee && (
         <AddEmployeeModal
           form={empForm}
           setForm={setEmpForm}

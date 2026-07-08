@@ -1,4 +1,4 @@
-import client from '../shared/api/client.js'
+import client from '../../shared/api/client.js'
 
 export const getPayPeriods = () => client.get('/pay-periods').then((r) => r.data)
 export const createPayPeriod = (body) => client.post('/pay-periods', body).then((r) => r.data)

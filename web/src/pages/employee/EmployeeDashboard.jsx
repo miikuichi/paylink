@@ -6,7 +6,7 @@ import DataTable from "../../shared/components/ui/DataTable.jsx";
 import Badge from "../../shared/components/ui/Badge.jsx";
 import Button from "../../shared/components/ui/Button.jsx";
 import { useAuth } from "../../features/auth/AuthContext.jsx";
-import { getMyPayrolls } from "../../api/payroll.js";
+import { getMyPayrolls } from "../../features/payroll/api.js";
 import { getMyPayslips } from "../../api/payslips.js";
 import "./Dashboard.css";
 

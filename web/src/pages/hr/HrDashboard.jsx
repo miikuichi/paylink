@@ -12,11 +12,12 @@ import {
   EditEmployeeModal,
 } from "../../features/employees/index.js";
 import {
-  getPayPeriods,
-  createPayPeriod,
-  getPayrollsByPeriod,
-  processPayroll,
-} from "../../api/payroll.js";
+  usePayroll,
+  PayPeriodSelector,
+  PayrollTable,
+  PayrollResultsTable,
+  AddPayPeriodModal,
+} from "../../features/payroll/index.js";
 import { getPayslipsByPeriod, generatePayslip } from "../../api/payslips.js";
 import "./Dashboard.css";
 
@@ -185,30 +186,37 @@ const HrDashboard = () => {
     openEditRate,
     handleUpdateRate,
   } = useEmployees();
+  const {
+    payPeriods,
+    setPayPeriods,
+    payrolls,
+    setPayrolls,
+    selectedPeriodId,
+    setSelectedPeriodId,
+    refreshPayPeriods,
+    refreshPayrolls,
+    showAddPeriod,
+    setShowAddPeriod,
+    periodForm,
+    setPeriodForm,
+    periodFormError,
+    periodFormLoading,
+    handleAddPeriod,
+    processError,
+    processLoading,
+    handleProcessPayroll,
+  } = usePayroll();
 
-  const [payPeriods, setPayPeriods] = useState([]);
-  const [payrolls, setPayrolls] = useState([]);
-  const [payslips, setPayslips] = useState([]);
-  const [selectedPeriodId, setSelectedPeriodId] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  const [showAddPeriod, setShowAddPeriod] = useState(false);
-  const [periodForm, setPeriodForm] = useState({ startDate: "", endDate: "" });
-  const [periodFormError, setPeriodFormError] = useState("");
-  const [periodFormLoading, setPeriodFormLoading] = useState(false);
-
-  const [processError, setProcessError] = useState("");
-  const [processLoading, setProcessLoading] = useState(false);
+  const [error, setError] = useState("");  const [payslips, setPayslips] = useState([]);
   const loadBase = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
       const [, periods] = await Promise.all([
         refreshEmployees(),
-        getPayPeriods(),
+        refreshPayPeriods(),
       ]);
-      setPayPeriods(periods);
       if (periods.length > 0)
         setSelectedPeriodId((prev) => prev ?? periods[0].id);
     } catch (e) {
@@ -216,7 +224,7 @@ const HrDashboard = () => {
     } finally {
       setLoading(false);
     }
-  }, [refreshEmployees]);
+  }, [refreshEmployees, refreshPayPeriods]);
 
   useEffect(() => {
     loadBase();
@@ -225,65 +233,25 @@ const HrDashboard = () => {
   useEffect(() => {
     if (!selectedPeriodId) return;
     Promise.all([
-      getPayrollsByPeriod(selectedPeriodId),
+      refreshPayrolls(selectedPeriodId),
       getPayslipsByPeriod(selectedPeriodId),
     ])
-      .then(([pr, ps]) => {
-        setPayrolls(pr);
-        setPayslips(ps);
-      })
+      .then(([, ps]) => setPayslips(ps))
       .catch(() => {});
   }, [selectedPeriodId]);
 
   const currentPeriod = payPeriods.find((p) => p.id === selectedPeriodId);
   const activeEmployees = employees.filter((e) => e.status === "ACTIVE").length;
   const totalNetPay = payrolls.reduce((sum, r) => sum + (r.netPay ?? 0), 0);
-  const processedCount = payrolls.filter(
-    (r) => r.status === "PROCESSED",
-  ).length;
-  const handleAddPeriod = async (e) => {
-    e.preventDefault();
-    setPeriodFormError("");
-    setPeriodFormLoading(true);
-    try {
-      const created = await createPayPeriod(periodForm);
-      setShowAddPeriod(false);
-      setPeriodForm({ startDate: "", endDate: "" });
-      setPayPeriods(await getPayPeriods());
-      setSelectedPeriodId(created.id);
-    } catch (err) {
-      setPeriodFormError(err.message);
-    } finally {
-      setPeriodFormLoading(false);
-    }
-  };
-
-  const handleProcessPayroll = async (employeeId) => {
-    if (!selectedPeriodId) return;
-    setProcessError("");
-    setProcessLoading(true);
-    try {
-      await processPayroll({
-        employeeId,
-        payPeriodId: selectedPeriodId,
-        additionalItems: [],
-      });
-      setPayrolls(await getPayrollsByPeriod(selectedPeriodId));
-    } catch (err) {
-      setProcessError(err.message);
-    } finally {
-      setProcessLoading(false);
-    }
-  };
+  const processedCount = payrolls.filter((r) => r.status === "PROCESSED").length;
 
   const handleGeneratePayslip = async (payrollId) => {
     try {
       await generatePayslip(payrollId);
-      const [pr, ps] = await Promise.all([
-        getPayrollsByPeriod(selectedPeriodId),
+      const [, ps] = await Promise.all([
+        refreshPayrolls(selectedPeriodId),
         getPayslipsByPeriod(selectedPeriodId),
       ]);
-      setPayrolls(pr);
       setPayslips(ps);
     } catch (err) {
       alert(err.message);
@@ -464,168 +432,41 @@ const HrDashboard = () => {
         >
           <EmployeeTable employees={employees} onEditRate={openEditRate} />
         </Panel>
-      )}
-
-      {activeKey === "payroll" && (
+      )}      {activeKey === "payroll" && (
         <>
           {payPeriods.length === 0 && (
             <Panel
               title="No pay periods yet"
               subtitle="Create a pay period before processing payroll."
               actions={
-                <Button
-                  variant="gold"
-                  size="sm"
-                  icon={<PlusIcon />}
-                  onClick={() => setShowAddPeriod(true)}
-                >
+                <Button variant="gold" size="sm" icon={<PlusIcon />} onClick={() => setShowAddPeriod(true)}>
                   New Period
                 </Button>
               }
             >
               <p style={{ opacity: 0.7, margin: 0 }}>
-                Once a period exists, run payroll for active employees and
-                generate payslips.
+                Once a period exists, run payroll for active employees and generate payslips.
               </p>
             </Panel>
           )}
 
-          <div
-            style={{
-              display: "flex",
-              gap: 12,
-              alignItems: "center",
-              marginBottom: 16,
-            }}
-          >
-            <select
-              value={selectedPeriodId ?? ""}
-              onChange={(e) => setSelectedPeriodId(Number(e.target.value))}
-              style={{
-                padding: "6px 10px",
-                borderRadius: 6,
-                border: "1px solid #d1d5db",
-              }}
-            >
-              {payPeriods.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.label} ({p.status})
-                </option>
-              ))}
-            </select>
-            <Button
-              variant="ghost"
-              size="sm"
-              icon={<PlusIcon />}
-              onClick={() => setShowAddPeriod(true)}
-            >
-              New Period
-            </Button>
-          </div>
-          {processError && (
-            <p style={{ color: "red", marginBottom: 8 }}>{processError}</p>
-          )}
+          <PayPeriodSelector
+            payPeriods={payPeriods}
+            selectedPeriodId={selectedPeriodId}
+            onSelect={setSelectedPeriodId}
+            onAddPeriod={() => setShowAddPeriod(true)}
+          />
 
-          <Panel
-            title="Process Payroll"
-            subtitle="Computes SSS, PhilHealth, Pag-IBIG and withholding tax automatically"
-          >
-            <DataTable
-              columns={[
-                { key: "employeeNumber", header: "ID" },
-                { key: "firstName", header: "First Name" },
-                { key: "lastName", header: "Last Name" },
-                {
-                  key: "basicRate",
-                  header: "Basic Rate",
-                  align: "right",
-                  render: (r) => currency(r.basicRate),
-                },
-                {
-                  key: "payrollStatus",
-                  header: "Action",
-                  align: "center",
-                  render: (r) => {
-                    const existing = payrolls.find(
-                      (p) => p.employeeId === r.id,
-                    );
-                    if (existing)
-                      return (
-                        <Badge tone={statusTone(existing.status)} dot>
-                          {existing.status}
-                        </Badge>
-                      );
-                    return (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        loading={processLoading}
-                        onClick={() => handleProcessPayroll(r.id)}
-                      >
-                        Run
-                      </Button>
-                    );
-                  },
-                },
-              ]}
-              rows={employees.filter((e) => e.status === "ACTIVE")}
-            />
-            {employees.filter((e) => e.status === "ACTIVE").length === 0 && (
-              <p style={{ opacity: 0.5, textAlign: "center", padding: 24 }}>
-                No active employees available for payroll processing.
-              </p>
-            )}
-          </Panel>
+          {processError && <p style={{ color: "red", marginBottom: 8 }}>{processError}</p>}
 
-          {payrolls.length > 0 && (
-            <Panel
-              title="Payroll Results"
-              subtitle="Computed for this period"
-              style={{ marginTop: 16 }}
-            >
-              <DataTable
-                columns={[
-                  { key: "employeeName", header: "Employee" },
-                  {
-                    key: "grossPay",
-                    header: "Gross Pay",
-                    align: "right",
-                    render: (r) => currency(r.grossPay),
-                  },
-                  {
-                    key: "totalDeductions",
-                    header: "Deductions",
-                    align: "right",
-                    render: (r) => currency(r.totalDeductions),
-                  },
-                  {
-                    key: "netPay",
-                    header: "Net Pay",
-                    align: "right",
-                    render: (r) => <strong>{currency(r.netPay)}</strong>,
-                  },
-                  {
-                    key: "payslip",
-                    header: "Payslip",
-                    align: "center",
-                    render: (r) =>
-                      r.hasPayslip ? (
-                        <Badge tone="success">Issued</Badge>
-                      ) : (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleGeneratePayslip(r.id)}
-                        >
-                          Generate
-                        </Button>
-                      ),
-                  },
-                ]}
-                rows={payrolls}
-              />
-            </Panel>
-          )}
+          <PayrollTable
+            employees={employees}
+            payrolls={payrolls}
+            processLoading={processLoading}
+            onProcess={(empId) => handleProcessPayroll(empId, selectedPeriodId)}
+          />
+
+          <PayrollResultsTable payrolls={payrolls} onGeneratePayslip={handleGeneratePayslip} />
         </>
       )}
 
@@ -706,66 +547,15 @@ const HrDashboard = () => {
           onSubmit={handleAddEmployee}
           onClose={() => setShowAddEmployee(false)}
         />
-      )}
-
-      {showAddPeriod && (
-        <div className="modal-overlay" onClick={() => setShowAddPeriod(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h3 style={{ margin: "0 0 16px" }}>New Pay Period</h3>
-            {periodFormError && (
-              <p style={{ color: "red", marginBottom: 8 }}>{periodFormError}</p>
-            )}
-            <form
-              onSubmit={handleAddPeriod}
-              style={{ display: "flex", flexDirection: "column", gap: 10 }}
-            >
-              {[
-                { label: "Start Date", field: "startDate" },
-                { label: "End Date", field: "endDate" },
-              ].map(({ label, field }) => (
-                <label
-                  key={field}
-                  style={{ display: "flex", flexDirection: "column", gap: 4 }}
-                >
-                  <span style={{ fontSize: 13, fontWeight: 500 }}>{label}</span>
-                  <input
-                    type="date"
-                    value={periodForm[field]}
-                    onChange={(e) =>
-                      setPeriodForm((f) => ({ ...f, [field]: e.target.value }))
-                    }
-                    required
-                    style={{
-                      padding: "6px 10px",
-                      borderRadius: 6,
-                      border: "1px solid #d1d5db",
-                    }}
-                  />
-                </label>
-              ))}
-              <div
-                style={{
-                  display: "flex",
-                  gap: 8,
-                  justifyContent: "flex-end",
-                  marginTop: 4,
-                }}
-              >
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowAddPeriod(false)}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" size="sm" loading={periodFormLoading}>
-                  Create Period
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
+      )}      {showAddPeriod && (
+        <AddPayPeriodModal
+          form={periodForm}
+          setForm={setPeriodForm}
+          error={periodFormError}
+          loading={periodFormLoading}
+          onSubmit={handleAddPeriod}
+          onClose={() => setShowAddPeriod(false)}
+        />
       )}      {showEditEmployee && (
         <EditEmployeeModal
           employee={editingEmployee}

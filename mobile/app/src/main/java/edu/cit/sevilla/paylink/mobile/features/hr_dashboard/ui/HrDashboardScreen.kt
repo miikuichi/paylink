@@ -1,4 +1,4 @@
-package edu.cit.sevilla.paylink.mobile.ui.screens.dashboard
+package edu.cit.sevilla.paylink.mobile.features.hr_dashboard.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -39,15 +39,15 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import edu.cit.sevilla.paylink.mobile.data.model.CreateEmployeeRequest
-import edu.cit.sevilla.paylink.mobile.data.model.PayPeriodDto
-import edu.cit.sevilla.paylink.mobile.data.model.PayrollDto
-import edu.cit.sevilla.paylink.mobile.data.model.Session
-import edu.cit.sevilla.paylink.mobile.ui.theme.Cream100
-import edu.cit.sevilla.paylink.mobile.ui.theme.Cream200
-import edu.cit.sevilla.paylink.mobile.ui.theme.Gold100
-import edu.cit.sevilla.paylink.mobile.ui.theme.Gold500
-import edu.cit.sevilla.paylink.mobile.ui.theme.Maroon800
+import edu.cit.sevilla.paylink.mobile.features.auth.data.model.Session
+import edu.cit.sevilla.paylink.mobile.features.employees.data.model.CreateEmployeeRequest
+import edu.cit.sevilla.paylink.mobile.features.payperiods.data.model.PayPeriodDto
+import edu.cit.sevilla.paylink.mobile.features.payroll.data.model.PayrollDto
+import edu.cit.sevilla.paylink.mobile.core.ui.theme.Cream100
+import edu.cit.sevilla.paylink.mobile.core.ui.theme.Cream200
+import edu.cit.sevilla.paylink.mobile.core.ui.theme.Gold100
+import edu.cit.sevilla.paylink.mobile.core.ui.theme.Gold500
+import edu.cit.sevilla.paylink.mobile.core.ui.theme.Maroon800
 
 private val hrTabs = listOf("Overview", "Employees", "Payroll", "Payslips")
 

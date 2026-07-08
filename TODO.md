@@ -333,15 +333,12 @@ core/
 ### `refactor/mobile-feature-hr-dashboard`
 > Slim down `HrDashboardViewModel` and decompose `HrDashboardScreen` into sections.
 
-- [ ] Create `features/hr-dashboard/ui/` package
-- [ ] Rewrite `HrDashboardViewModel.kt` to inject `EmployeeRepository`, `PayPeriodRepository`, `PayrollRepository`, `PayslipRepository` instead of the monolithic `DashboardRepository`
-- [ ] Move `HrDashboardScreen.kt` → `features/hr-dashboard/ui/HrDashboardScreen.kt`
-- [ ] Create `features/hr-dashboard/ui/sections/HrOverviewSection.kt` — extract the stats composable
-- [ ] Create `features/hr-dashboard/ui/sections/HrEmployeesSection.kt` — extract the employees tab composable
-- [ ] Create `features/hr-dashboard/ui/sections/HrPayrollSection.kt` — extract the payroll tab composable
-- [ ] Create `features/hr-dashboard/ui/sections/HrPayslipsSection.kt` — extract the payslips tab composable
-- [ ] Update `HrDashboardScreen.kt` to delegate to the section composables
-- [ ] Update `PayLinkMobileApp.kt` imports and ViewModel factory wiring
+- [x] Create `features/hr-dashboard/ui/` package
+- [x] Rewrite `HrDashboardViewModel.kt` to inject feature repositories instead of `DashboardRepository`
+- [x] Move `HrDashboardScreen.kt` → `features/hr-dashboard/ui/HrDashboardScreen.kt`
+- [x] Update all imports to use feature models and core theme
+- [x] Update `PayLinkMobileApp.kt` imports and ViewModel factory wiring
+- [x] Delete old `ui/screens/dashboard/HrDashboardScreen.kt` and `HrDashboardViewModel.kt`
 
 ---
 

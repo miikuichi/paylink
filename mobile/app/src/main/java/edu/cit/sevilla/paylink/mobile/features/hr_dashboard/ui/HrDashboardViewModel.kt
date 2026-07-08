@@ -1,17 +1,20 @@
-package edu.cit.sevilla.paylink.mobile.ui.screens.dashboard
+package edu.cit.sevilla.paylink.mobile.features.hr_dashboard.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import edu.cit.sevilla.paylink.mobile.data.model.CreateEmployeeRequest
-import edu.cit.sevilla.paylink.mobile.data.model.CreatePayPeriodRequest
-import edu.cit.sevilla.paylink.mobile.data.model.EmployeeProfile
-import edu.cit.sevilla.paylink.mobile.data.model.PayPeriodDto
-import edu.cit.sevilla.paylink.mobile.data.model.PayrollDto
-import edu.cit.sevilla.paylink.mobile.data.model.PayslipDto
-import edu.cit.sevilla.paylink.mobile.data.model.ProcessPayrollRequest
-import edu.cit.sevilla.paylink.mobile.data.model.UpdateEmployeeRequest
-import edu.cit.sevilla.paylink.mobile.data.repo.DashboardRepository
+import edu.cit.sevilla.paylink.mobile.features.employees.data.model.CreateEmployeeRequest
+import edu.cit.sevilla.paylink.mobile.features.employees.data.model.EmployeeProfile
+import edu.cit.sevilla.paylink.mobile.features.employees.data.model.UpdateEmployeeRequest
+import edu.cit.sevilla.paylink.mobile.features.employees.data.repository.EmployeeRepository
+import edu.cit.sevilla.paylink.mobile.features.payperiods.data.model.CreatePayPeriodRequest
+import edu.cit.sevilla.paylink.mobile.features.payperiods.data.model.PayPeriodDto
+import edu.cit.sevilla.paylink.mobile.features.payperiods.data.repository.PayPeriodRepository
+import edu.cit.sevilla.paylink.mobile.features.payroll.data.model.PayrollDto
+import edu.cit.sevilla.paylink.mobile.features.payroll.data.model.ProcessPayrollRequest
+import edu.cit.sevilla.paylink.mobile.features.payroll.data.repository.PayrollRepository
+import edu.cit.sevilla.paylink.mobile.features.payslips.data.model.PayslipDto
+import edu.cit.sevilla.paylink.mobile.features.payslips.data.repository.PayslipRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,7 +32,10 @@ data class HrDashboardState(
 )
 
 class HrDashboardViewModel(
-    private val repository: DashboardRepository,
+    private val employeeRepository: EmployeeRepository,
+    private val payPeriodRepository: PayPeriodRepository,
+    private val payrollRepository: PayrollRepository,
+    private val payslipRepository: PayslipRepository,
 ) : ViewModel() {
     private val _state = MutableStateFlow(HrDashboardState())
     val state: StateFlow<HrDashboardState> = _state.asStateFlow()
@@ -45,8 +51,8 @@ class HrDashboardViewModel(
         viewModelScope.launch {
             _state.value = _state.value.copy(isLoading = true, errorMessage = "")
 
-            val employeesResult = runCatching { repository.getEmployees(token) }
-            val periodsResult = runCatching { repository.getPayPeriods(token) }
+            val employeesResult = runCatching { employeeRepository.getEmployees(bearer(token)) }
+            val periodsResult = runCatching { payPeriodRepository.getPayPeriods(bearer(token)) }
 
             val employees = employeesResult.getOrElse { emptyList() }
             val periods = periodsResult.getOrElse { emptyList() }
@@ -81,7 +87,7 @@ class HrDashboardViewModel(
 
     fun createEmployee(token: String, request: CreateEmployeeRequest) {
         viewModelScope.launch {
-            runCatching { repository.createEmployee(token, request) }
+            runCatching { employeeRepository.createEmployee(bearer(token), request) }
                 .onSuccess { load(token, force = true) }
                 .onFailure { err ->
                     _state.value = _state.value.copy(errorMessage = err.message ?: "Failed to create employee")
@@ -92,8 +98,8 @@ class HrDashboardViewModel(
     fun updateEmployeeRate(token: String, employeeId: Long, basicRate: Double) {
         viewModelScope.launch {
             runCatching {
-                repository.updateEmployee(
-                    token,
+                employeeRepository.updateEmployee(
+                    bearer(token),
                     employeeId,
                     UpdateEmployeeRequest(basicRate = basicRate),
                 )
@@ -106,7 +112,12 @@ class HrDashboardViewModel(
 
     fun createPayPeriod(token: String, startDate: String, endDate: String) {
         viewModelScope.launch {
-            runCatching { repository.createPayPeriod(token, CreatePayPeriodRequest(startDate, endDate)) }
+            runCatching {
+                payPeriodRepository.createPayPeriod(
+                    bearer(token),
+                    CreatePayPeriodRequest(startDate, endDate),
+                )
+            }
                 .onSuccess { created ->
                     load(token, force = true)
                     _state.value = _state.value.copy(selectedPeriodId = created.id)
@@ -123,8 +134,8 @@ class HrDashboardViewModel(
 
         viewModelScope.launch {
             runCatching {
-                repository.processPayroll(
-                    token,
+                payrollRepository.processPayroll(
+                    bearer(token),
                     ProcessPayrollRequest(employeeId = employeeId, payPeriodId = periodId),
                 )
             }.onSuccess {
@@ -141,7 +152,7 @@ class HrDashboardViewModel(
         _state.value = _state.value.copy(busyIds = _state.value.busyIds + payrollId)
 
         viewModelScope.launch {
-            runCatching { repository.generatePayslip(token, payrollId) }
+            runCatching { payslipRepository.generatePayslip(bearer(token), payrollId) }
                 .onSuccess {
                     _state.value.selectedPeriodId?.let { refreshPeriodData(token, it) }
                 }
@@ -156,8 +167,8 @@ class HrDashboardViewModel(
     private fun refreshPeriodData(token: String, payPeriodId: Long) {
         viewModelScope.launch {
             runCatching {
-                val payrolls = repository.getPayrollsByPeriod(token, payPeriodId)
-                val payslips = repository.getPayslipsByPeriod(token, payPeriodId)
+                val payrolls = payrollRepository.getPayrollsByPeriod(bearer(token), payPeriodId)
+                val payslips = payslipRepository.getPayslipsByPeriod(bearer(token), payPeriodId)
                 payrolls to payslips
             }.onSuccess { (payrolls, payslips) ->
                 _state.value = _state.value.copy(
@@ -171,10 +182,22 @@ class HrDashboardViewModel(
         }
     }
 
-    class Factory(private val repository: DashboardRepository) : ViewModelProvider.Factory {
+    private fun bearer(token: String) = "Bearer $token"
+
+    class Factory(
+        private val employeeRepository: EmployeeRepository,
+        private val payPeriodRepository: PayPeriodRepository,
+        private val payrollRepository: PayrollRepository,
+        private val payslipRepository: PayslipRepository,
+    ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return HrDashboardViewModel(repository) as T
+            return HrDashboardViewModel(
+                employeeRepository,
+                payPeriodRepository,
+                payrollRepository,
+                payslipRepository,
+            ) as T
         }
     }
 }

@@ -1,6 +1,6 @@
-package edu.cit.sevilla.paylink.mobile.data.network
+package edu.cit.sevilla.paylink.mobile.features.payslips.data.network
 
-import edu.cit.sevilla.paylink.mobile.data.model.PayslipDto
+import edu.cit.sevilla.paylink.mobile.features.payslips.data.model.PayslipDto
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST

@@ -6,14 +6,14 @@ import edu.cit.sevilla.paylink.mobile.features.payperiods.data.model.CreatePayPe
 import edu.cit.sevilla.paylink.mobile.features.employees.data.model.EmployeeProfile
 import edu.cit.sevilla.paylink.mobile.features.payperiods.data.model.PayPeriodDto
 import edu.cit.sevilla.paylink.mobile.features.payroll.data.model.PayrollDto
-import edu.cit.sevilla.paylink.mobile.data.model.PayslipDto
+import edu.cit.sevilla.paylink.mobile.features.payslips.data.model.PayslipDto
 import edu.cit.sevilla.paylink.mobile.features.payroll.data.model.ProcessPayrollRequest
 import edu.cit.sevilla.paylink.mobile.features.employees.data.model.UpdateEmployeeRequest
 import edu.cit.sevilla.paylink.mobile.core.network.ApiError
 import edu.cit.sevilla.paylink.mobile.features.employees.data.network.EmployeeApi
 import edu.cit.sevilla.paylink.mobile.features.payperiods.data.network.PayPeriodApi
 import edu.cit.sevilla.paylink.mobile.features.payroll.data.network.PayrollApi
-import edu.cit.sevilla.paylink.mobile.data.network.PayslipApi
+import edu.cit.sevilla.paylink.mobile.features.payslips.data.network.PayslipApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException

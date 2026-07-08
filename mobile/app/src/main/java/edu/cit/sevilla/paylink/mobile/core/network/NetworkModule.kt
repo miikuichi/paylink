@@ -26,6 +26,6 @@ object NetworkModule {
         .build()    val authApi: edu.cit.sevilla.paylink.mobile.features.auth.data.network.AuthApi = retrofit.create(edu.cit.sevilla.paylink.mobile.features.auth.data.network.AuthApi::class.java)
     val employeeApi: edu.cit.sevilla.paylink.mobile.features.employees.data.network.EmployeeApi = retrofit.create(edu.cit.sevilla.paylink.mobile.features.employees.data.network.EmployeeApi::class.java)
     val payrollApi: edu.cit.sevilla.paylink.mobile.features.payroll.data.network.PayrollApi = retrofit.create(edu.cit.sevilla.paylink.mobile.features.payroll.data.network.PayrollApi::class.java)
-    val payslipApi: edu.cit.sevilla.paylink.mobile.data.network.PayslipApi = retrofit.create(edu.cit.sevilla.paylink.mobile.data.network.PayslipApi::class.java)
+    val payslipApi: edu.cit.sevilla.paylink.mobile.features.payslips.data.network.PayslipApi = retrofit.create(edu.cit.sevilla.paylink.mobile.features.payslips.data.network.PayslipApi::class.java)
     val payPeriodApi: edu.cit.sevilla.paylink.mobile.features.payperiods.data.network.PayPeriodApi = retrofit.create(edu.cit.sevilla.paylink.mobile.features.payperiods.data.network.PayPeriodApi::class.java)
 }

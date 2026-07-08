@@ -318,14 +318,15 @@ core/
 ### `refactor/mobile-feature-payslips`
 > Extract the payslip domain into its own slice.
 
-- [ ] Create `features/payslips/data/model/` package
+- [x] Create `features/payslips/data/model/` package
   - Extract `PayslipDto` from `DomainModels.kt`
-- [ ] Create `features/payslips/data/network/` package — move `PayslipApi.kt`
-- [ ] Create `features/payslips/data/repository/PayslipRepository.kt`
-- [ ] Update `package` declarations in all moved/new files
-- [ ] Update imports in `DashboardRepository.kt`
-- [ ] Update `NetworkModule.kt` if needed
-- [ ] Remove payslip models from `DomainModels.kt`
+- [x] Create `features/payslips/data/network/` package — move `PayslipApi.kt`
+- [x] Create `features/payslips/data/repository/PayslipRepository.kt`
+- [x] Update `package` declarations in all moved/new files
+- [x] Update imports in `DashboardRepository.kt`
+- [x] Update `NetworkModule.kt` to use feature `PayslipApi`
+- [x] Remove payslip models from `DomainModels.kt`
+- [x] Delete old `data/model/` and `data/network/` folders
 
 ---
 

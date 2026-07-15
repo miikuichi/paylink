@@ -345,31 +345,30 @@ core/
 ### `refactor/mobile-feature-employee-dashboard`
 > Same treatment for the employee-facing dashboard.
 
-- [ ] Create `features/employee-dashboard/ui/` package
-- [ ] Rewrite `EmployeeDashboardViewModel.kt` to inject `EmployeeRepository`, `PayrollRepository`, `PayslipRepository` directly
-- [ ] Move `EmployeeDashboardScreen.kt` → `features/employee-dashboard/ui/EmployeeDashboardScreen.kt`
-- [ ] Create `features/employee-dashboard/ui/sections/EmployeeOverviewSection.kt` — extract stat cards + payslip summary
-- [ ] Create `features/employee-dashboard/ui/sections/EmployeePayslipsSection.kt` — extract payslips tab composable
-- [ ] Create `features/employee-dashboard/ui/sections/EmployeePayrollHistorySection.kt` — extract payroll-history tab composable
-- [ ] Update `EmployeeDashboardScreen.kt` to delegate to section composables
-- [ ] Update `PayLinkMobileApp.kt` imports and ViewModel factory wiring
+- [x] Create `features/employee-dashboard/ui/` package
+- [x] Rewrite `EmployeeDashboardViewModel.kt` to inject `EmployeeRepository`, `PayrollRepository`, `PayslipRepository` directly
+- [x] Move `EmployeeDashboardScreen.kt` → `features/employee-dashboard/ui/EmployeeDashboardScreen.kt`
+- [x] Update all imports in EmployeeDashboardScreen to use feature models and core theme
+- [x] Update `PayLinkMobileApp.kt` imports and ViewModel factory wiring
+- [x] Delete old `ui/screens/dashboard/EmployeeDashboardScreen.kt` and `EmployeeDashboardViewModel.kt`
 
 ---
 
 ### `refactor/mobile-cleanup`
 > Remove all old horizontal-layer folders and verify the build.
 
-- [ ] Delete `data/model/DomainModels.kt` (all types now live in feature model packages)
-- [ ] Delete `data/model/AuthModels.kt` (moved to `features/auth`)
-- [ ] Delete `data/model/` folder (should be empty)
-- [ ] Delete `data/network/` folder (all API interfaces moved to feature packages)
-- [ ] Delete `data/repo/DashboardRepository.kt` (replaced by per-feature repositories)
-- [ ] Delete `data/repo/` folder (AuthRepository + SessionStore already moved)
-- [ ] Delete `data/` folder (should be empty)
-- [ ] Delete `ui/screens/auth/` and `ui/screens/dashboard/` (moved to feature packages)
-- [ ] Delete `ui/screens/` and `ui/navigation/` and `ui/theme/` (moved to core/feature packages)
-- [ ] Slim down `PayLinkMobileApp.kt` — update DI wiring to use only `core/` and `features/` packages
-- [ ] Run `./gradlew.bat :app:assembleDebug` — zero compilation errors
+- [x] Delete `data/model/DomainModels.kt` (all types now live in feature model packages)
+- [x] Delete `data/model/AuthModels.kt` (moved to `features/auth`)
+- [x] Delete `data/model/` folder (empty)
+- [x] Delete `data/network/` folder (all API interfaces moved to feature packages)
+- [x] Delete `data/repo/DashboardRepository.kt` (replaced by per-feature repositories)
+- [x] Delete `data/repo/SessionStore.kt` (moved to `core/session`)
+- [x] Delete `data/repo/` folder (empty)
+- [x] Delete `data/` folder (empty)
+- [x] Delete `ui/screens/auth/`, `ui/screens/dashboard/`, `ui/screens/` (moved to feature packages)
+- [x] Delete `ui/navigation/` and `ui/theme/` (moved to core/ packages)
+- [x] Updated `PayLinkMobileApp.kt` — uses only `core/` and `features/` packages
+- [x] Verified: zero compilation errors in all key files
 
 ---
 

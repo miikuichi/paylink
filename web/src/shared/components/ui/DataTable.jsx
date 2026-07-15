@@ -1,7 +1,7 @@
 import './DataTable.css'
 
 /**
- * columns: [{ key, header, render?(row), align?: 'left'|'right'|'center' }]
+ * columns: [{ key, header, render?(row), align?: 'left'|'right'|'center', onHeaderClick?: Function }]
  */
 const DataTable = ({ columns, rows, emptyLabel = 'No records found.' }) => {
   return (
@@ -10,7 +10,12 @@ const DataTable = ({ columns, rows, emptyLabel = 'No records found.' }) => {
         <thead>
           <tr>
             {columns.map((col) => (
-              <th key={col.key} style={{ textAlign: col.align || 'left' }}>
+              <th
+                key={col.key}
+                style={{ textAlign: col.align || 'left' }}
+                className={col.onHeaderClick ? 'dtable__th--sortable' : ''}
+                onClick={col.onHeaderClick}
+              >
                 {col.header}
               </th>
             ))}

@@ -170,7 +170,8 @@ const estimatePreview = (
     .reduce((sum, item) => sum + item.amount, 0);
 
   const hourlyRate = monthlyBasicRate / 240;
-  const usesHours = hoursInput && Object.values(hoursInput).some((v) => Number(v) > 0);
+  const usesHours =
+    hoursInput && Object.values(hoursInput).some((v) => Number(v) > 0);
   const payableRegularHours = Math.max(
     0,
     Number(hoursInput?.workedHours ?? 0) +
@@ -179,15 +180,15 @@ const estimatePreview = (
   );
   const computedBasicPay = round2(payableRegularHours * hourlyRate);
   const overtimePay = round2(
-    Number(hoursInput?.overtimeHours ?? 0) *
-      hourlyRate *
-      1.25,
+    Number(hoursInput?.overtimeHours ?? 0) * hourlyRate * 1.25,
   );
   const nightDifferentialPay = round2(
     Number(hoursInput?.nightShiftHours ?? 0) * hourlyRate * 0.1,
   );
 
-  const basicPay = usesHours ? computedBasicPay : round2(monthlyBasicRate * ratio);
+  const basicPay = usesHours
+    ? computedBasicPay
+    : round2(monthlyBasicRate * ratio);
   const grossPay = usesHours
     ? round2(basicPay + overtimePay + nightDifferentialPay + extraAllowances)
     : round2(basicPay + extraAllowances);
@@ -289,9 +290,10 @@ export function PayrollTable({
     };
     const shiftStartHour = parseHours(employee.shiftStart ?? "09:00");
     const shiftEndHour = parseHours(employee.shiftEnd ?? "18:00");
-    const shiftHours = shiftEndHour >= shiftStartHour
-      ? shiftEndHour - shiftStartHour
-      : (24 - shiftStartHour) + shiftEndHour;
+    const shiftHours =
+      shiftEndHour >= shiftStartHour
+        ? shiftEndHour - shiftStartHour
+        : 24 - shiftStartHour + shiftEndHour;
 
     setPreviewEmployee(employee);
     setAdditionalItems([]);
@@ -458,7 +460,8 @@ export function PayrollTable({
                 <strong>{currency(preview.basicPay)}</strong>
               </div>
               <div>
-                Overtime pay estimate: <strong>{currency(preview.overtimePay)}</strong>
+                Overtime pay estimate:{" "}
+                <strong>{currency(preview.overtimePay)}</strong>
               </div>
               <div>
                 Night differential estimate:{" "}
@@ -495,7 +498,11 @@ export function PayrollTable({
                     step="0.5"
                     value={workedHours}
                     onChange={(e) => setWorkedHours(e.target.value)}
-                    style={{ padding: "6px 8px", borderRadius: 6, border: "1px solid #d1d5db" }}
+                    style={{
+                      padding: "6px 8px",
+                      borderRadius: 6,
+                      border: "1px solid #d1d5db",
+                    }}
                   />
                 </label>
                 <label style={{ display: "grid", gap: 4, fontSize: 12 }}>
@@ -506,7 +513,11 @@ export function PayrollTable({
                     step="0.5"
                     value={overtimeHours}
                     onChange={(e) => setOvertimeHours(e.target.value)}
-                    style={{ padding: "6px 8px", borderRadius: 6, border: "1px solid #d1d5db" }}
+                    style={{
+                      padding: "6px 8px",
+                      borderRadius: 6,
+                      border: "1px solid #d1d5db",
+                    }}
                   />
                 </label>
                 <label style={{ display: "grid", gap: 4, fontSize: 12 }}>
@@ -517,7 +528,11 @@ export function PayrollTable({
                     step="0.5"
                     value={nightShiftHours}
                     onChange={(e) => setNightShiftHours(e.target.value)}
-                    style={{ padding: "6px 8px", borderRadius: 6, border: "1px solid #d1d5db" }}
+                    style={{
+                      padding: "6px 8px",
+                      borderRadius: 6,
+                      border: "1px solid #d1d5db",
+                    }}
                   />
                 </label>
                 <label style={{ display: "grid", gap: 4, fontSize: 12 }}>
@@ -528,10 +543,21 @@ export function PayrollTable({
                     step="0.5"
                     value={paidAbsenceHours}
                     onChange={(e) => setPaidAbsenceHours(e.target.value)}
-                    style={{ padding: "6px 8px", borderRadius: 6, border: "1px solid #d1d5db" }}
+                    style={{
+                      padding: "6px 8px",
+                      borderRadius: 6,
+                      border: "1px solid #d1d5db",
+                    }}
                   />
                 </label>
-                <label style={{ display: "grid", gap: 4, fontSize: 12, gridColumn: "span 2" }}>
+                <label
+                  style={{
+                    display: "grid",
+                    gap: 4,
+                    fontSize: 12,
+                    gridColumn: "span 2",
+                  }}
+                >
                   Unpaid Absence Hours
                   <input
                     type="number"
@@ -539,7 +565,11 @@ export function PayrollTable({
                     step="0.5"
                     value={unpaidAbsenceHours}
                     onChange={(e) => setUnpaidAbsenceHours(e.target.value)}
-                    style={{ padding: "6px 8px", borderRadius: 6, border: "1px solid #d1d5db" }}
+                    style={{
+                      padding: "6px 8px",
+                      borderRadius: 6,
+                      border: "1px solid #d1d5db",
+                    }}
                   />
                 </label>
               </div>

@@ -25,6 +25,15 @@
   white-space: nowrap;
 }
 
+.dtable__th--sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.dtable__th--sortable:hover {
+  background: var(--cream-300);
+}
+
 .dtable td {
   padding: 14px 16px;
   border-top: 1px solid var(--surface-border);

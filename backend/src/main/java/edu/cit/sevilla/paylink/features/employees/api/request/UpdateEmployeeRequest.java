@@ -7,13 +7,13 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 public record UpdateEmployeeRequest(
-                String firstName,
-                String lastName,
-                String position,
-                String department,
-                LocalDate dateHired,
-                BigDecimal basicRate,
-                LocalTime shiftStart,
-                LocalTime shiftEnd,
-                EmployeeStatus status) {
+        String firstName,
+        String lastName,
+        String position,
+        String department,
+        LocalDate dateHired,
+        BigDecimal basicRate,
+        LocalTime shiftStart,
+        LocalTime shiftEnd,
+        EmployeeStatus status) {
 }

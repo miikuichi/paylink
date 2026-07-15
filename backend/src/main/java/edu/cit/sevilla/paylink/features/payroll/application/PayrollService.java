@@ -88,7 +88,8 @@ public class PayrollService {
                 BigDecimal overtimeHours = req.overtimeHours() != null ? req.overtimeHours() : BigDecimal.ZERO;
                 BigDecimal nightShiftHours = req.nightShiftHours() != null ? req.nightShiftHours() : BigDecimal.ZERO;
                 BigDecimal paidAbsenceHours = req.paidAbsenceHours() != null ? req.paidAbsenceHours() : BigDecimal.ZERO;
-                BigDecimal unpaidAbsenceHours = req.unpaidAbsenceHours() != null ? req.unpaidAbsenceHours() : BigDecimal.ZERO;
+                BigDecimal unpaidAbsenceHours = req.unpaidAbsenceHours() != null ? req.unpaidAbsenceHours()
+                                : BigDecimal.ZERO;
 
                 boolean usesHourInputs = req.workedHours() != null || req.overtimeHours() != null
                                 || req.nightShiftHours() != null || req.paidAbsenceHours() != null
@@ -104,7 +105,8 @@ public class PayrollService {
                         }
 
                         BigDecimal hourlyRate = employee.getBasicRate()
-                                        .divide(PayrollConfiguration.HOURS_PER_MONTH, 10, java.math.RoundingMode.HALF_UP);
+                                        .divide(PayrollConfiguration.HOURS_PER_MONTH, 10,
+                                                        java.math.RoundingMode.HALF_UP);
                         BigDecimal nightDifferential = computationService.computeNightDifferential(hourlyRate,
                                         nightShiftHours);
 
@@ -118,7 +120,8 @@ public class PayrollService {
                 } else {
                         // Gross pay = prorated basic + extra allowances
                         grossPay = computationService.computeGrossPay(
-                                        employee.getBasicRate(), period.getStartDate(), period.getEndDate(), extraAllowances);
+                                        employee.getBasicRate(), period.getStartDate(), period.getEndDate(),
+                                        extraAllowances);
                 }
 
                 // Statutory deductions

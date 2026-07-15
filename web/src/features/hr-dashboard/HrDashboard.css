@@ -112,3 +112,37 @@
   max-height: 420px;
   overflow: auto;
 }
+
+.employee-panel-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.employee-table-search {
+  width: clamp(180px, 28vw, 280px);
+  height: 34px;
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-sm);
+  padding: 0 10px;
+  font-size: 0.875rem;
+  font: inherit;
+  color: var(--ink-800);
+  background: var(--surface-elevated);
+}
+
+.employee-table-search:focus {
+  outline: 2px solid color-mix(in srgb, var(--gold-500) 35%, transparent);
+  outline-offset: 0;
+}
+
+@media (max-width: 720px) {
+  .employee-panel-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .employee-table-search {
+    width: min(220px, 100%);
+  }
+}

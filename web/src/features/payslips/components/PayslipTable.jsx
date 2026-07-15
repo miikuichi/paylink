@@ -51,8 +51,14 @@ export function HrPayslipTable({ payslips, title, subtitle, onRevokePayslip }) {
               header: "Actions",
               align: "center",
               render: (r) => (
-                <div style={{ display: "inline-flex", gap: 8, flexWrap: "wrap" }}>
-                  <Button size="sm" variant="ghost" onClick={() => setSelectedPayslip(r)}>
+                <div
+                  style={{ display: "inline-flex", gap: 8, flexWrap: "wrap" }}
+                >
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setSelectedPayslip(r)}
+                  >
                     View
                   </Button>
                   <Button
@@ -80,11 +86,17 @@ export function HrPayslipTable({ payslips, title, subtitle, onRevokePayslip }) {
           <div
             className="modal"
             onClick={(e) => e.stopPropagation()}
-            style={{ width: 720, maxWidth: "96vw", maxHeight: "86vh", overflowY: "auto" }}
+            style={{
+              width: 720,
+              maxWidth: "96vw",
+              maxHeight: "86vh",
+              overflowY: "auto",
+            }}
           >
             <h3 style={{ margin: "0 0 8px" }}>Payslip Details</h3>
             <p style={{ margin: "0 0 12px", opacity: 0.7 }}>
-              {selectedPayslip.periodLabel} · Issued {selectedPayslip.issuedAt
+              {selectedPayslip.periodLabel} · Issued{" "}
+              {selectedPayslip.issuedAt
                 ? new Date(selectedPayslip.issuedAt).toLocaleDateString()
                 : "Pending"}
             </p>
@@ -121,19 +133,31 @@ export function HrPayslipTable({ payslips, title, subtitle, onRevokePayslip }) {
             <div className="payslip__summary" style={{ marginTop: 18 }}>
               <div>
                 <p className="payslip__summary-label">Gross Pay</p>
-                <p className="payslip__summary-value">{currency(selectedPayslip.grossPay)}</p>
+                <p className="payslip__summary-value">
+                  {currency(selectedPayslip.grossPay)}
+                </p>
               </div>
               <div>
                 <p className="payslip__summary-label">Total Deductions</p>
-                <p className="payslip__summary-value payslip__summary-value--neg">-{currency(selectedPayslip.totalDeductions)}</p>
+                <p className="payslip__summary-value payslip__summary-value--neg">
+                  -{currency(selectedPayslip.totalDeductions)}
+                </p>
               </div>
               <div className="payslip__summary-net">
                 <p className="payslip__summary-label">Net Pay</p>
-                <p className="payslip__summary-value payslip__summary-value--net">{currency(selectedPayslip.netPay)}</p>
+                <p className="payslip__summary-value payslip__summary-value--net">
+                  {currency(selectedPayslip.netPay)}
+                </p>
               </div>
             </div>
 
-            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 12 }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                marginTop: 12,
+              }}
+            >
               <Button size="sm" onClick={() => setSelectedPayslip(null)}>
                 Close
               </Button>

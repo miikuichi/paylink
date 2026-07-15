@@ -1,11 +1,8 @@
-import Panel from '../../../shared/components/ui/Panel.jsx'
-import Button from '../../../shared/components/ui/Button.jsx'
-import { PlusIcon } from '../../../shared/icons/index.jsx'
-import {
-  PayPeriodSelector,
-  AddPayPeriodModal,
-} from '../../payroll/index.js'
-import { HrPayslipTable } from '../../payslips/index.js'
+import Panel from "../../../shared/components/ui/Panel.jsx";
+import Button from "../../../shared/components/ui/Button.jsx";
+import { PlusIcon } from "../../../shared/icons/index.jsx";
+import { PayPeriodSelector, AddPayPeriodModal } from "../../payroll/index.js";
+import { HrPayslipTable } from "../../payslips/index.js";
 
 /**
  * HR Payslips section — pay-period selector and payslip table.
@@ -35,7 +32,8 @@ export function HrPayslipsSection({
           subtitle="Create a pay period to issue and view payslips."
         >
           <p style={{ opacity: 0.7, margin: 0 }}>
-            Payslips are generated from processed payrolls within a specific pay period.
+            Payslips are generated from processed payrolls within a specific pay
+            period.
           </p>
         </Panel>
       )}
@@ -47,9 +45,9 @@ export function HrPayslipsSection({
       />
       <HrPayslipTable
         payslips={payslips}
-        subtitle={`Issued for ${currentPeriod?.label ?? '—'}`}
+        subtitle={`Issued for ${currentPeriod?.label ?? "—"}`}
         onRevokePayslip={onRevokePayslip}
       />
     </>
-  )
+  );
 }

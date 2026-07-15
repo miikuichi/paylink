@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
 import DashboardLayout from "../../shared/layouts/DashboardLayout.jsx";
-import Button from "../../shared/components/ui/Button.jsx";
 import {
   useEmployees,
   AddEmployeeModal,
@@ -13,7 +12,6 @@ import {
   PeopleIcon,
   WalletIcon,
   DocIcon,
-  PlusIcon,
 } from "../../shared/icons/index.jsx";
 import { HrOverviewSection } from "./sections/HrOverviewSection.jsx";
 import { HrEmployeesSection } from "./sections/HrEmployeesSection.jsx";
@@ -77,7 +75,8 @@ const HrDashboard = () => {
     handleProcessPayroll,
   } = usePayroll();
 
-  const { payslips, refreshPayslipsByPeriod, handleRevokePayslip } = usePayslips();
+  const { payslips, refreshPayslipsByPeriod, handleRevokePayslip } =
+    usePayslips();
 
   const loadBase = useCallback(async () => {
     setLoading(true);
@@ -116,7 +115,11 @@ const HrDashboard = () => {
   };
 
   const handleRevoke = async (payslipId) => {
-    if (!window.confirm("Revoke this payslip? This is used for correcting payroll input issues.")) {
+    if (
+      !window.confirm(
+        "Revoke this payslip? This is used for correcting payroll input issues.",
+      )
+    ) {
       return;
     }
     await handleRevokePayslip(payslipId, async () => {
@@ -139,16 +142,6 @@ const HrDashboard = () => {
         currentPeriod
           ? `Pay period: ${currentPeriod.label}`
           : "No pay period selected"
-      }
-      headerActions={
-        <Button
-          variant="gold"
-          size="sm"
-          icon={<PlusIcon />}
-          onClick={() => setShowAddEmployee(true)}
-        >
-          New Employee
-        </Button>
       }
     >
       {error && <p style={{ color: "red", marginBottom: 12 }}>{error}</p>}

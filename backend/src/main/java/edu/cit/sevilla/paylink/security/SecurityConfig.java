@@ -70,7 +70,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/holidays", "/api/holidays/**")
                         .hasAnyRole("ADMIN", "EMPLOYEE")
                         .requestMatchers("/api/employees/**", "/api/payrolls/**", "/api/payslips/**",
-                            "/api/pay-periods/**", "/api/holidays/**")
+                                "/api/pay-periods/**", "/api/holidays/**")
                         .hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .authenticationProvider(authenticationProvider())

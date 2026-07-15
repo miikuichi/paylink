@@ -7,15 +7,15 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 public record CreateEmployeeRequest(
-                @NotBlank String username,
-                @NotBlank @Email String email,
-                @NotBlank @Size(min = 8) String password,
-                @NotBlank String firstName,
-                @NotBlank String lastName,
-                String position,
-                String department,
-                LocalDate dateHired,
-                @NotNull @DecimalMin("0") BigDecimal basicRate,
-                LocalTime shiftStart,
-                LocalTime shiftEnd) {
+        @NotBlank String username,
+        @NotBlank @Email String email,
+        @NotBlank @Size(min = 8) String password,
+        @NotBlank String firstName,
+        @NotBlank String lastName,
+        String position,
+        String department,
+        LocalDate dateHired,
+        @NotNull @DecimalMin("0") BigDecimal basicRate,
+        LocalTime shiftStart,
+        LocalTime shiftEnd) {
 }

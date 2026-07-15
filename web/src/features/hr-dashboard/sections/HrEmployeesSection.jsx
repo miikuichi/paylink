@@ -31,7 +31,9 @@ export function HrEmployeesSection({
         </Button>
       }
     >
-      <EmployeeTable employees={employees} onEditRate={onEditRate} />
+      <div className="employee-directory-scroll">
+        <EmployeeTable employees={employees} onEditRate={onEditRate} />
+      </div>
     </Panel>
   )
 }

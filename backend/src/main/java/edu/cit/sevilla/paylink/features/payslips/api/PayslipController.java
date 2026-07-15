@@ -39,4 +39,10 @@ public class PayslipController {
     public ResponseEntity<PayslipDto> generate(@PathVariable Long payrollId) {
         return ResponseEntity.status(HttpStatus.CREATED).body(payslipService.generate(payrollId));
     }
+
+    @DeleteMapping("/{id}/revoke")
+    public ResponseEntity<Void> revoke(@PathVariable Long id) {
+        payslipService.revoke(id);
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -140,7 +140,13 @@ const computeTaxMonthly = (salary, sss, philhealth, pagibig) => {
   return round2(200833.33 + (taxable - 666667) * 0.35);
 };
 
-const estimatePreview = (basicRate, startDate, endDate, additionalItems) => {
+const estimatePreview = (
+  basicRate,
+  startDate,
+  endDate,
+  additionalItems,
+  hoursInput,
+) => {
   const monthlyBasicRate = Number(basicRate ?? 0);
   const days = countDaysInclusive(startDate, endDate);
   const ratio = days / 30;
@@ -163,8 +169,28 @@ const estimatePreview = (basicRate, startDate, endDate, additionalItems) => {
     .filter((item) => item.itemType === "DEDUCTION")
     .reduce((sum, item) => sum + item.amount, 0);
 
-  const basicPay = round2(monthlyBasicRate * ratio);
-  const grossPay = round2(basicPay + extraAllowances);
+  const hourlyRate = monthlyBasicRate / 240;
+  const usesHours = hoursInput && Object.values(hoursInput).some((v) => Number(v) > 0);
+  const payableRegularHours = Math.max(
+    0,
+    Number(hoursInput?.workedHours ?? 0) +
+      Number(hoursInput?.paidAbsenceHours ?? 0) -
+      Number(hoursInput?.unpaidAbsenceHours ?? 0),
+  );
+  const computedBasicPay = round2(payableRegularHours * hourlyRate);
+  const overtimePay = round2(
+    Number(hoursInput?.overtimeHours ?? 0) *
+      hourlyRate *
+      1.25,
+  );
+  const nightDifferentialPay = round2(
+    Number(hoursInput?.nightShiftHours ?? 0) * hourlyRate * 0.1,
+  );
+
+  const basicPay = usesHours ? computedBasicPay : round2(monthlyBasicRate * ratio);
+  const grossPay = usesHours
+    ? round2(basicPay + overtimePay + nightDifferentialPay + extraAllowances)
+    : round2(basicPay + extraAllowances);
 
   const sssMonthly = computeSssMonthly(monthlyBasicRate);
   const philhealthMonthly = computePhilhealthMonthly(monthlyBasicRate);
@@ -202,6 +228,8 @@ const estimatePreview = (basicRate, startDate, endDate, additionalItems) => {
     statutoryTotal,
     extraAllowances: round2(extraAllowances),
     extraDeductions: round2(extraDeductions),
+    overtimePay,
+    nightDifferentialPay,
     totalDeductions,
     netPay,
     additionalItems: normalizedItems,
@@ -217,6 +245,11 @@ export function PayrollTable({
 }) {
   const [previewEmployee, setPreviewEmployee] = useState(null);
   const [additionalItems, setAdditionalItems] = useState([]);
+  const [workedHours, setWorkedHours] = useState(0);
+  const [overtimeHours, setOvertimeHours] = useState(0);
+  const [nightShiftHours, setNightShiftHours] = useState(0);
+  const [paidAbsenceHours, setPaidAbsenceHours] = useState(0);
+  const [unpaidAbsenceHours, setUnpaidAbsenceHours] = useState(0);
 
   const preview = useMemo(() => {
     if (!previewEmployee || !payPeriod) return null;
@@ -225,12 +258,48 @@ export function PayrollTable({
       payPeriod.startDate,
       payPeriod.endDate,
       additionalItems,
+      {
+        workedHours,
+        overtimeHours,
+        nightShiftHours,
+        paidAbsenceHours,
+        unpaidAbsenceHours,
+      },
     );
-  }, [previewEmployee, payPeriod, additionalItems]);
+  }, [
+    previewEmployee,
+    payPeriod,
+    additionalItems,
+    workedHours,
+    overtimeHours,
+    nightShiftHours,
+    paidAbsenceHours,
+    unpaidAbsenceHours,
+  ]);
 
   const openPreview = (employee) => {
+    const days = countDaysInclusive(payPeriod?.startDate, payPeriod?.endDate);
+    const parseHours = (timeText) => {
+      if (!timeText || !String(timeText).includes(":")) return 8;
+      const [hourText, minuteText] = String(timeText).split(":");
+      const hour = Number(hourText);
+      const minute = Number(minuteText);
+      if (!Number.isFinite(hour) || !Number.isFinite(minute)) return 8;
+      return hour + minute / 60;
+    };
+    const shiftStartHour = parseHours(employee.shiftStart ?? "09:00");
+    const shiftEndHour = parseHours(employee.shiftEnd ?? "18:00");
+    const shiftHours = shiftEndHour >= shiftStartHour
+      ? shiftEndHour - shiftStartHour
+      : (24 - shiftStartHour) + shiftEndHour;
+
     setPreviewEmployee(employee);
     setAdditionalItems([]);
+    setWorkedHours(round2(Math.max(0, days * Math.max(1, shiftHours))));
+    setOvertimeHours(0);
+    setNightShiftHours(0);
+    setPaidAbsenceHours(0);
+    setUnpaidAbsenceHours(0);
   };
 
   const addItem = (itemType) => {
@@ -255,16 +324,28 @@ export function PayrollTable({
   const closePreview = () => {
     setPreviewEmployee(null);
     setAdditionalItems([]);
+    setWorkedHours(0);
+    setOvertimeHours(0);
+    setNightShiftHours(0);
+    setPaidAbsenceHours(0);
+    setUnpaidAbsenceHours(0);
   };
 
   const handleConfirmProcess = async () => {
     if (!previewEmployee || !preview) return;
-    await onProcess(previewEmployee.id, preview.additionalItems);
+    await onProcess(previewEmployee.id, {
+      additionalItems: preview.additionalItems,
+      workedHours: Number(workedHours),
+      overtimeHours: Number(overtimeHours),
+      nightShiftHours: Number(nightShiftHours),
+      paidAbsenceHours: Number(paidAbsenceHours),
+      unpaidAbsenceHours: Number(unpaidAbsenceHours),
+    });
     closePreview();
   };
 
   const handleRunNow = async (employeeId) => {
-    await onProcess(employeeId, []);
+    await onProcess(employeeId, { additionalItems: [] });
   };
 
   return (
@@ -377,8 +458,90 @@ export function PayrollTable({
                 <strong>{currency(preview.basicPay)}</strong>
               </div>
               <div>
+                Overtime pay estimate: <strong>{currency(preview.overtimePay)}</strong>
+              </div>
+              <div>
+                Night differential estimate:{" "}
+                <strong>{currency(preview.nightDifferentialPay)}</strong>
+              </div>
+              <div>
                 Gross pay estimate:{" "}
                 <strong>{currency(preview.grossPay)}</strong>
+              </div>
+            </div>
+
+            <div
+              style={{
+                border: "1px solid #e5e7eb",
+                borderRadius: 8,
+                padding: 10,
+                marginBottom: 12,
+              }}
+            >
+              <strong style={{ fontSize: 13 }}>Hours & Absences</strong>
+              <div
+                style={{
+                  marginTop: 8,
+                  display: "grid",
+                  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                  gap: 8,
+                }}
+              >
+                <label style={{ display: "grid", gap: 4, fontSize: 12 }}>
+                  Worked Hours
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.5"
+                    value={workedHours}
+                    onChange={(e) => setWorkedHours(e.target.value)}
+                    style={{ padding: "6px 8px", borderRadius: 6, border: "1px solid #d1d5db" }}
+                  />
+                </label>
+                <label style={{ display: "grid", gap: 4, fontSize: 12 }}>
+                  Overtime Hours
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.5"
+                    value={overtimeHours}
+                    onChange={(e) => setOvertimeHours(e.target.value)}
+                    style={{ padding: "6px 8px", borderRadius: 6, border: "1px solid #d1d5db" }}
+                  />
+                </label>
+                <label style={{ display: "grid", gap: 4, fontSize: 12 }}>
+                  Night Shift Hours
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.5"
+                    value={nightShiftHours}
+                    onChange={(e) => setNightShiftHours(e.target.value)}
+                    style={{ padding: "6px 8px", borderRadius: 6, border: "1px solid #d1d5db" }}
+                  />
+                </label>
+                <label style={{ display: "grid", gap: 4, fontSize: 12 }}>
+                  Paid Absence Hours
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.5"
+                    value={paidAbsenceHours}
+                    onChange={(e) => setPaidAbsenceHours(e.target.value)}
+                    style={{ padding: "6px 8px", borderRadius: 6, border: "1px solid #d1d5db" }}
+                  />
+                </label>
+                <label style={{ display: "grid", gap: 4, fontSize: 12, gridColumn: "span 2" }}>
+                  Unpaid Absence Hours
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.5"
+                    value={unpaidAbsenceHours}
+                    onChange={(e) => setUnpaidAbsenceHours(e.target.value)}
+                    style={{ padding: "6px 8px", borderRadius: 6, border: "1px solid #d1d5db" }}
+                  />
+                </label>
               </div>
             </div>
 

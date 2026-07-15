@@ -52,4 +52,11 @@ public class PayslipService {
 
         return PayslipDto.from(payslipRepository.save(Payslip.builder().payroll(payroll).build()));
     }
+
+    @Transactional
+    public void revoke(Long payslipId) {
+        Payslip payslip = payslipRepository.findById(payslipId)
+                .orElseThrow(() -> new EntityNotFoundException("Payslip not found: " + payslipId));
+        payslipRepository.delete(payslip);
+    }
 }

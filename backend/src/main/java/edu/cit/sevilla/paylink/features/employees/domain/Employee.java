@@ -12,6 +12,7 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Entity
 @Table(name = "employees")
@@ -51,6 +52,12 @@ public class Employee {
     @Column(name = "basic_rate", nullable = false, precision = 12, scale = 2)
     private BigDecimal basicRate;
 
+    @Column(name = "shift_start", nullable = false)
+    private LocalTime shiftStart;
+
+    @Column(name = "shift_end", nullable = false)
+    private LocalTime shiftEnd;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private EmployeeStatus status;
@@ -71,6 +78,12 @@ public class Employee {
         }
         if (this.basicRate == null) {
             this.basicRate = BigDecimal.ZERO;
+        }
+        if (this.shiftStart == null) {
+            this.shiftStart = LocalTime.of(9, 0);
+        }
+        if (this.shiftEnd == null) {
+            this.shiftEnd = LocalTime.of(18, 0);
         }
     }
 

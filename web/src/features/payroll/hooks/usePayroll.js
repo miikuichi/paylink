@@ -57,13 +57,25 @@ export function usePayroll() {
     }
   }
 
-  const handleProcessPayroll = async (employeeId, periodId, additionalItems = []) => {
+  const handleProcessPayroll = async (employeeId, periodId, options = {}) => {
     const pid = periodId ?? selectedPeriodId
     if (!pid) return
     setProcessError('')
     setProcessLoading(true)
     try {
-      await processPayroll({ employeeId, payPeriodId: pid, additionalItems })
+      const payload = {
+        employeeId,
+        payPeriodId: pid,
+        additionalItems: options.additionalItems ?? [],
+      }
+
+      if (options.workedHours != null) payload.workedHours = options.workedHours
+      if (options.overtimeHours != null) payload.overtimeHours = options.overtimeHours
+      if (options.nightShiftHours != null) payload.nightShiftHours = options.nightShiftHours
+      if (options.paidAbsenceHours != null) payload.paidAbsenceHours = options.paidAbsenceHours
+      if (options.unpaidAbsenceHours != null) payload.unpaidAbsenceHours = options.unpaidAbsenceHours
+
+      await processPayroll(payload)
       await refreshPayrolls(pid)
     } catch (err) {
       setProcessError(err.message)

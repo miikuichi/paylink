@@ -4,6 +4,7 @@ import edu.cit.sevilla.paylink.enums.EmployeeStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 public record UpdateEmployeeRequest(
                 String firstName,
@@ -12,5 +13,7 @@ public record UpdateEmployeeRequest(
                 String department,
                 LocalDate dateHired,
                 BigDecimal basicRate,
+                LocalTime shiftStart,
+                LocalTime shiftEnd,
                 EmployeeStatus status) {
 }

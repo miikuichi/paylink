@@ -84,9 +84,42 @@ public class PayrollService {
                         }
                 }
 
-                // Gross pay = prorated basic + extra allowances
-                BigDecimal grossPay = computationService.computeGrossPay(
-                                employee.getBasicRate(), period.getStartDate(), period.getEndDate(), extraAllowances);
+                BigDecimal workedHours = req.workedHours() != null ? req.workedHours() : BigDecimal.ZERO;
+                BigDecimal overtimeHours = req.overtimeHours() != null ? req.overtimeHours() : BigDecimal.ZERO;
+                BigDecimal nightShiftHours = req.nightShiftHours() != null ? req.nightShiftHours() : BigDecimal.ZERO;
+                BigDecimal paidAbsenceHours = req.paidAbsenceHours() != null ? req.paidAbsenceHours() : BigDecimal.ZERO;
+                BigDecimal unpaidAbsenceHours = req.unpaidAbsenceHours() != null ? req.unpaidAbsenceHours() : BigDecimal.ZERO;
+
+                boolean usesHourInputs = req.workedHours() != null || req.overtimeHours() != null
+                                || req.nightShiftHours() != null || req.paidAbsenceHours() != null
+                                || req.unpaidAbsenceHours() != null;
+
+                BigDecimal grossPay;
+                if (usesHourInputs) {
+                        BigDecimal payableRegularHours = workedHours
+                                        .add(paidAbsenceHours)
+                                        .subtract(unpaidAbsenceHours);
+                        if (payableRegularHours.compareTo(BigDecimal.ZERO) < 0) {
+                                payableRegularHours = BigDecimal.ZERO;
+                        }
+
+                        BigDecimal hourlyRate = employee.getBasicRate()
+                                        .divide(PayrollConfiguration.HOURS_PER_MONTH, 10, java.math.RoundingMode.HALF_UP);
+                        BigDecimal nightDifferential = computationService.computeNightDifferential(hourlyRate,
+                                        nightShiftHours);
+
+                        grossPay = computationService.computeGrossPayWithOvertime(
+                                        employee.getBasicRate(),
+                                        payableRegularHours,
+                                        overtimeHours,
+                                        extraAllowances)
+                                        .add(nightDifferential)
+                                        .setScale(2, java.math.RoundingMode.HALF_UP);
+                } else {
+                        // Gross pay = prorated basic + extra allowances
+                        grossPay = computationService.computeGrossPay(
+                                        employee.getBasicRate(), period.getStartDate(), period.getEndDate(), extraAllowances);
+                }
 
                 // Statutory deductions
                 Map<String, BigDecimal> statutory = computationService.computeStatutoryDeductions(

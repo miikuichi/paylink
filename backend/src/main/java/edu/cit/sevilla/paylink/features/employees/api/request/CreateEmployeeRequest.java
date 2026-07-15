@@ -4,6 +4,7 @@ import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 public record CreateEmployeeRequest(
                 @NotBlank String username,
@@ -14,5 +15,7 @@ public record CreateEmployeeRequest(
                 String position,
                 String department,
                 LocalDate dateHired,
-                @NotNull @DecimalMin("0") BigDecimal basicRate) {
+                @NotNull @DecimalMin("0") BigDecimal basicRate,
+                LocalTime shiftStart,
+                LocalTime shiftEnd) {
 }

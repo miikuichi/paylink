@@ -16,6 +16,11 @@ export function EmployeeTable({ employees, onEditRate }) {
           { key: 'position', header: 'Position' },
           { key: 'department', header: 'Department' },
           {
+            key: 'shift',
+            header: 'Shift',
+            render: (r) => `${r.shiftStart ?? '09:00'} - ${r.shiftEnd ?? '18:00'}`,
+          },
+          {
             key: 'basicRate',
             header: 'Basic Rate',
             align: 'right',

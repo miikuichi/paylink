@@ -48,6 +48,10 @@ const HrDashboard = () => {
     editingEmployee,
     editRateValue,
     setEditRateValue,
+    editShiftStart,
+    setEditShiftStart,
+    editShiftEnd,
+    setEditShiftEnd,
     editRateError,
     editRateLoading,
     openEditRate,
@@ -73,7 +77,7 @@ const HrDashboard = () => {
     handleProcessPayroll,
   } = usePayroll();
 
-  const { payslips, refreshPayslipsByPeriod } = usePayslips();
+  const { payslips, refreshPayslipsByPeriod, handleRevokePayslip } = usePayslips();
 
   const loadBase = useCallback(async () => {
     setLoading(true);
@@ -109,6 +113,18 @@ const HrDashboard = () => {
       refreshPayrolls(selectedPeriodId),
       refreshPayslipsByPeriod(selectedPeriodId),
     ]);
+  };
+
+  const handleRevoke = async (payslipId) => {
+    if (!window.confirm("Revoke this payslip? This is used for correcting payroll input issues.")) {
+      return;
+    }
+    await handleRevokePayslip(payslipId, async () => {
+      await Promise.all([
+        refreshPayrolls(selectedPeriodId),
+        refreshPayslipsByPeriod(selectedPeriodId),
+      ]);
+    });
   };
 
   const currentPeriod = payPeriods.find((p) => p.id === selectedPeriodId);
@@ -167,8 +183,8 @@ const HrDashboard = () => {
           payrolls={payrolls}
           processLoading={processLoading}
           processError={processError}
-          onProcessPayroll={(empId, additionalItems) =>
-            handleProcessPayroll(empId, selectedPeriodId, additionalItems)
+          onProcessPayroll={(empId, options) =>
+            handleProcessPayroll(empId, selectedPeriodId, options)
           }
           onAddPeriod={() => setShowAddPeriod(true)}
           onAfterGenerate={handleAfterGenerate}
@@ -183,6 +199,7 @@ const HrDashboard = () => {
           payslips={payslips}
           onAddPeriod={() => setShowAddPeriod(true)}
           currentPeriod={currentPeriod}
+          onRevokePayslip={handleRevoke}
         />
       )}
 
@@ -213,6 +230,10 @@ const HrDashboard = () => {
           employee={editingEmployee}
           rateValue={editRateValue}
           setRateValue={setEditRateValue}
+          shiftStart={editShiftStart}
+          setShiftStart={setEditShiftStart}
+          shiftEnd={editShiftEnd}
+          setShiftEnd={setEditShiftEnd}
           error={editRateError}
           loading={editRateLoading}
           onSubmit={handleUpdateRate}

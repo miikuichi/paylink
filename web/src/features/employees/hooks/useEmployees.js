@@ -10,6 +10,8 @@ const EMPTY_EMP_FORM = {
   position: '',
   department: '',
   basicRate: '',
+  shiftStart: '09:00',
+  shiftEnd: '18:00',
 }
 
 export function useEmployees() {
@@ -25,6 +27,8 @@ export function useEmployees() {
   const [showEditEmployee, setShowEditEmployee] = useState(false)
   const [editingEmployee, setEditingEmployee] = useState(null)
   const [editRateValue, setEditRateValue] = useState('')
+  const [editShiftStart, setEditShiftStart] = useState('09:00')
+  const [editShiftEnd, setEditShiftEnd] = useState('18:00')
   const [editRateError, setEditRateError] = useState('')
   const [editRateLoading, setEditRateLoading] = useState(false)
 
@@ -53,6 +57,8 @@ export function useEmployees() {
   const openEditRate = (employee) => {
     setEditingEmployee(employee)
     setEditRateValue(String(employee.basicRate ?? ''))
+    setEditShiftStart(employee.shiftStart ?? '09:00')
+    setEditShiftEnd(employee.shiftEnd ?? '18:00')
     setEditRateError('')
     setShowEditEmployee(true)
   }
@@ -67,11 +73,17 @@ export function useEmployees() {
     }
     setEditRateLoading(true)
     try {
-      await updateEmployee(editingEmployee.id, { basicRate: parsed })
+      await updateEmployee(editingEmployee.id, {
+        basicRate: parsed,
+        shiftStart: editShiftStart,
+        shiftEnd: editShiftEnd,
+      })
       await refresh()
       setShowEditEmployee(false)
       setEditingEmployee(null)
       setEditRateValue('')
+      setEditShiftStart('09:00')
+      setEditShiftEnd('18:00')
     } catch (err) {
       setEditRateError(err.message)
     } finally {
@@ -97,6 +109,10 @@ export function useEmployees() {
     editingEmployee,
     editRateValue,
     setEditRateValue,
+    editShiftStart,
+    setEditShiftStart,
+    editShiftEnd,
+    setEditShiftEnd,
     editRateError,
     editRateLoading,
     openEditRate,

@@ -107,3 +107,8 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.employee-directory-scroll {
+  max-height: 420px;
+  overflow: auto;
+}

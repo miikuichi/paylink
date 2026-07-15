@@ -25,6 +25,7 @@ export function HrPayslipsSection({
   payslips,
   onAddPeriod,
   currentPeriod,
+  onRevokePayslip,
 }) {
   return (
     <>
@@ -47,6 +48,7 @@ export function HrPayslipsSection({
       <HrPayslipTable
         payslips={payslips}
         subtitle={`Issued for ${currentPeriod?.label ?? '—'}`}
+        onRevokePayslip={onRevokePayslip}
       />
     </>
   )

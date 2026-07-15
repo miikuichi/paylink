@@ -9,6 +9,8 @@ const FIELDS = [
   { label: 'Position', field: 'position' },
   { label: 'Department', field: 'department' },
   { label: 'Basic Rate (₱/month)', field: 'basicRate', type: 'number' },
+  { label: 'Shift Start', field: 'shiftStart', type: 'time' },
+  { label: 'Shift End', field: 'shiftEnd', type: 'time' },
 ]
 
 export function AddEmployeeModal({ form, setForm, error, loading, onSubmit, onClose }) {

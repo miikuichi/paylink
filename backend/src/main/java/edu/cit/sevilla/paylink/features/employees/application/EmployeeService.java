@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -75,6 +76,8 @@ public class EmployeeService {
                 .department(req.department())
                 .dateHired(req.dateHired())
                 .basicRate(req.basicRate().max(MIN_BASIC_RATE))
+                .shiftStart(req.shiftStart() != null ? req.shiftStart() : LocalTime.of(9, 0))
+                .shiftEnd(req.shiftEnd() != null ? req.shiftEnd() : LocalTime.of(18, 0))
                 .status(EmployeeStatus.ACTIVE)
                 .build());
 
@@ -99,6 +102,10 @@ public class EmployeeService {
             employee.setDateHired(req.dateHired());
         if (req.basicRate() != null)
             employee.setBasicRate(req.basicRate().max(MIN_BASIC_RATE));
+        if (req.shiftStart() != null)
+            employee.setShiftStart(req.shiftStart());
+        if (req.shiftEnd() != null)
+            employee.setShiftEnd(req.shiftEnd());
         if (req.status() != null)
             employee.setStatus(req.status());
 

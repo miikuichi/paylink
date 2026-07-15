@@ -50,7 +50,8 @@ const EmployeeDashboard = () => {
       activeKey={activeKey}
       onNavigate={setActiveKey}
       pageTitle={`Welcome back, ${displayName}`}
-      pageSubtitle={user?.position}      headerActions={
+      pageSubtitle={user?.position}
+      headerActions={
         <Button variant="gold" size="sm" icon={<DownloadIcon />}>
           Download Payslip
         </Button>

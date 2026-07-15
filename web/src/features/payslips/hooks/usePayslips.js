@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { getMyPayslips, getPayslipsByPeriod, generatePayslip } from '../api.js'
+import { getMyPayslips, getPayslipsByPeriod, generatePayslip, revokePayslip } from '../api.js'
 
 export function usePayslips() {
   const [payslips, setPayslips] = useState([])
@@ -21,11 +21,17 @@ export function usePayslips() {
     if (onSuccess) await onSuccess()
   }
 
+  const handleRevokePayslip = async (payslipId, onSuccess) => {
+    await revokePayslip(payslipId)
+    if (onSuccess) await onSuccess()
+  }
+
   return {
     payslips,
     setPayslips,
     refreshMyPayslips,
     refreshPayslipsByPeriod,
     handleGeneratePayslip,
+    handleRevokePayslip,
   }
 }

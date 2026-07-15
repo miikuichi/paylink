@@ -1,12 +1,12 @@
-import Panel from '../../../shared/components/ui/Panel.jsx'
-import Button from '../../../shared/components/ui/Button.jsx'
-import Alert from '../../../shared/components/ui/Alert.jsx'
-import { PlusIcon } from '../../../shared/icons/index.jsx'
+import Panel from "../../../shared/components/ui/Panel.jsx";
+import Button from "../../../shared/components/ui/Button.jsx";
+import Alert from "../../../shared/components/ui/Alert.jsx";
+import { PlusIcon } from "../../../shared/icons/index.jsx";
 import {
   PayPeriodSelector,
   PayrollTable,
   PayrollResultsTable,
-} from '../../payroll/index.js'
+} from "../../payroll/index.js";
 
 /**
  * HR Payroll section — pay-period selector, payroll processing, and results.
@@ -55,7 +55,8 @@ export function HrPayrollSection({
           }
         >
           <p style={{ opacity: 0.7, margin: 0 }}>
-            Once a period exists, run payroll for active employees and generate payslips.
+            Once a period exists, run payroll for active employees and generate
+            payslips.
           </p>
         </Panel>
       )}
@@ -82,5 +83,5 @@ export function HrPayrollSection({
         onAfterGenerate={onAfterGenerate}
       />
     </>
-  )
+  );
 }

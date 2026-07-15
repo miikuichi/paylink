@@ -6,10 +6,7 @@ import {
   AddEmployeeModal,
   EditEmployeeModal,
 } from "../employees/index.js";
-import {
-  usePayroll,
-  AddPayPeriodModal,
-} from "../payroll/index.js";
+import { usePayroll, AddPayPeriodModal } from "../payroll/index.js";
 import { usePayslips } from "../payslips/index.js";
 import {
   GridIcon,
@@ -76,10 +73,7 @@ const HrDashboard = () => {
     handleProcessPayroll,
   } = usePayroll();
 
-  const {
-    payslips,
-    refreshPayslipsByPeriod,
-  } = usePayslips();
+  const { payslips, refreshPayslipsByPeriod } = usePayslips();
 
   const loadBase = useCallback(async () => {
     setLoading(true);

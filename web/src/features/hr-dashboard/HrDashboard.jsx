@@ -168,12 +168,13 @@ const HrDashboard = () => {
           employees={employees}
           payPeriods={payPeriods}
           selectedPeriodId={selectedPeriodId}
+          currentPeriod={currentPeriod}
           onSelectPeriod={setSelectedPeriodId}
           payrolls={payrolls}
           processLoading={processLoading}
           processError={processError}
-          onProcessPayroll={(empId) =>
-            handleProcessPayroll(empId, selectedPeriodId)
+          onProcessPayroll={(empId, additionalItems) =>
+            handleProcessPayroll(empId, selectedPeriodId, additionalItems)
           }
           onAddPeriod={() => setShowAddPeriod(true)}
           onAfterGenerate={handleAfterGenerate}

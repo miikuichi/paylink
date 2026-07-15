@@ -1,5 +1,6 @@
 import Panel from '../../../shared/components/ui/Panel.jsx'
 import Button from '../../../shared/components/ui/Button.jsx'
+import Alert from '../../../shared/components/ui/Alert.jsx'
 import { PlusIcon } from '../../../shared/icons/index.jsx'
 import {
   PayPeriodSelector,
@@ -14,6 +15,7 @@ import {
  * @param {Array}    props.employees
  * @param {Array}    props.payPeriods
  * @param {string}   props.selectedPeriodId
+ * @param {object}   props.currentPeriod
  * @param {Function} props.onSelectPeriod
  * @param {Array}    props.payrolls
  * @param {boolean}  props.processLoading
@@ -26,6 +28,7 @@ export function HrPayrollSection({
   employees,
   payPeriods,
   selectedPeriodId,
+  currentPeriod,
   onSelectPeriod,
   payrolls,
   processLoading,
@@ -64,11 +67,12 @@ export function HrPayrollSection({
         onAddPeriod={onAddPeriod}
       />
 
-      {processError && <p style={{ color: 'red', marginBottom: 8 }}>{processError}</p>}
+      {processError && <Alert tone="error">{processError}</Alert>}
 
       <PayrollTable
         employees={employees}
         payrolls={payrolls}
+        payPeriod={currentPeriod}
         processLoading={processLoading}
         onProcess={onProcessPayroll}
       />

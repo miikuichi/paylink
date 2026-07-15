@@ -57,13 +57,13 @@ export function usePayroll() {
     }
   }
 
-  const handleProcessPayroll = async (employeeId, periodId) => {
+  const handleProcessPayroll = async (employeeId, periodId, additionalItems = []) => {
     const pid = periodId ?? selectedPeriodId
     if (!pid) return
     setProcessError('')
     setProcessLoading(true)
     try {
-      await processPayroll({ employeeId, payPeriodId: pid, additionalItems: [] })
+      await processPayroll({ employeeId, payPeriodId: pid, additionalItems })
       await refreshPayrolls(pid)
     } catch (err) {
       setProcessError(err.message)

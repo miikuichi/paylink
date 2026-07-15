@@ -19,15 +19,15 @@ const fallbackFirstName = (userLike) => {
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = sessionStorage.getItem(STORAGE_KEY);
     return raw ? JSON.parse(raw) : null;
   });
 
   useEffect(() => {
     if (user) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(user));
     } else {
-      localStorage.removeItem(STORAGE_KEY);
+      sessionStorage.removeItem(STORAGE_KEY);
     }
   }, [user]);
 
@@ -64,7 +64,7 @@ export function AuthProvider({ children }) {
     const authData = await apiLogin(username, password);
     // token must be stored before we fetch the protected /employees/me endpoint
     const partial = { token: authData.token };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(partial));
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(partial));
 
     let employeeProfile = null;
     try {
@@ -94,7 +94,7 @@ export function AuthProvider({ children }) {
   const register = async (formValues) => {
     const authData = await apiRegister(formValues);
     const partial = { token: authData.token };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(partial));
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(partial));
 
     let employeeProfile = null;
     try {

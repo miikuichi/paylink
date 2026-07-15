@@ -1,15 +1,16 @@
 import axios from 'axios'
 
 const STORAGE_KEY = 'paylink.session'
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
 
 const client = axios.create({
-  baseURL: '/api',
+  baseURL: apiBaseUrl,
   headers: { 'Content-Type': 'application/json' },
 })
 
 // Attach JWT on every request
 client.interceptors.request.use((config) => {
-  const raw = localStorage.getItem(STORAGE_KEY)
+  const raw = sessionStorage.getItem(STORAGE_KEY)
   if (raw) {
     const session = JSON.parse(raw)
     if (session?.token) {

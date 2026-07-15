@@ -27,6 +27,9 @@ target/
 mobile/build/
 mobile/.gradle/
 mobile/app/build/
+mobile/*.jks
+mobile/*.keystore
+mobile/**/release-keystore.jks
 mobile/local.properties
 mobile/tools/
 mobile/.cxx/

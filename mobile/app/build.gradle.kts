@@ -3,6 +3,21 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 
+val releaseApiBaseUrl = providers.gradleProperty("PAYLINK_API_BASE_URL").orNull
+    ?: System.getenv("PAYLINK_API_BASE_URL")
+    ?: "https://your-backend-domain.com/api/"
+val debugApiBaseUrl = providers.gradleProperty("PAYLINK_DEBUG_API_BASE_URL").orNull
+    ?: "http://10.0.2.2:8080/api/"
+
+val releaseStoreFile = providers.gradleProperty("PAYLINK_RELEASE_STORE_FILE").orNull
+val releaseStorePassword = providers.gradleProperty("PAYLINK_RELEASE_STORE_PASSWORD").orNull
+val releaseKeyAlias = providers.gradleProperty("PAYLINK_RELEASE_KEY_ALIAS").orNull
+val releaseKeyPassword = providers.gradleProperty("PAYLINK_RELEASE_KEY_PASSWORD").orNull
+val hasReleaseSigning = !releaseStoreFile.isNullOrBlank() &&
+    !releaseStorePassword.isNullOrBlank() &&
+    !releaseKeyAlias.isNullOrBlank() &&
+    !releaseKeyPassword.isNullOrBlank()
+
 android {
     namespace = "edu.cit.sevilla.paylink.mobile"
     compileSdk = 34
@@ -18,12 +33,26 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
-        buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:8080/api/\"")
+    }
+
+    signingConfigs {
+        if (hasReleaseSigning) {
+            create("release") {
+                storeFile = file(releaseStoreFile!!)
+                storePassword = releaseStorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
+            }
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
+            if (hasReleaseSigning) {
+                signingConfig = signingConfigs.getByName("release")
+            }
+            buildConfigField("String", "API_BASE_URL", "\"$releaseApiBaseUrl\"")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -31,6 +60,7 @@ android {
         }
         debug {
             isMinifyEnabled = false
+            buildConfigField("String", "API_BASE_URL", "\"$debugApiBaseUrl\"")
         }
     }
 

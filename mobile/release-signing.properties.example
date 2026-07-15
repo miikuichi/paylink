@@ -1,0 +1,9 @@
+# Copy this file to an untracked local file and pass values as Gradle properties or env vars.
+# Example Gradle usage:
+#   .\gradlew.bat :app:assembleRelease -PPAYLINK_RELEASE_STORE_FILE=release-keystore.jks -PPAYLINK_RELEASE_STORE_PASSWORD=*** -PPAYLINK_RELEASE_KEY_ALIAS=*** -PPAYLINK_RELEASE_KEY_PASSWORD=*** -PPAYLINK_API_BASE_URL=https://your-backend-domain.com/api/
+
+PAYLINK_RELEASE_STORE_FILE=release-keystore.jks
+PAYLINK_RELEASE_STORE_PASSWORD=change-me
+PAYLINK_RELEASE_KEY_ALIAS=change-me
+PAYLINK_RELEASE_KEY_PASSWORD=change-me
+PAYLINK_API_BASE_URL=https://your-backend-domain.com/api/

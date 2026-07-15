@@ -7,10 +7,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -47,7 +51,7 @@ import edu.cit.sevilla.paylink.mobile.core.ui.theme.Gold100
 import edu.cit.sevilla.paylink.mobile.core.ui.theme.Gold500
 import edu.cit.sevilla.paylink.mobile.core.ui.theme.Maroon800
 
-private val employeeTabs = listOf("Overview", "My Payslips", "Payroll History")
+private val employeeTabs = listOf("Overview", "My Payslips", "Payslip History")
 
 @Composable
 fun EmployeeDashboardScreen(
@@ -130,7 +134,7 @@ fun EmployeeDashboardScreen(
                 )
 
                 1 -> EmployeePayslipsTab(state.payslips)
-                else -> EmployeeHistoryTab(state.payrolls)
+                else -> EmployeePayslipHistoryTab(state.payslips)
             }
         }
     }
@@ -196,7 +200,30 @@ private fun EmployeeOverviewTab(
 
 @Composable
 private fun EmployeePayslipsTab(payslips: List<PayslipDto>) {
+    var selectedPayslip by remember { androidx.compose.runtime.mutableStateOf<PayslipDto?>(null) }
+
     LazyColumn(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        item {
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Text("Pay Period", modifier = Modifier.weight(1.3f), fontWeight = FontWeight.Bold)
+                    Text("Gross", modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold)
+                    Text("Deductions", modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold)
+                    Text("Net", modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold)
+                    Text("Action", modifier = Modifier.weight(0.9f), fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+
         if (payslips.isEmpty()) {
             item {
                 Text(
@@ -212,11 +239,60 @@ private fun EmployeePayslipsTab(payslips: List<PayslipDto>) {
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
             ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Text(payslip.periodLabel, modifier = Modifier.weight(1.3f), fontWeight = FontWeight.SemiBold)
+                    Text(formatCurrency(payslip.grossPay), modifier = Modifier.weight(1f))
+                    Text(formatCurrency(payslip.totalDeductions), modifier = Modifier.weight(1f))
+                    Text(formatCurrency(payslip.netPay), modifier = Modifier.weight(1f), fontWeight = FontWeight.SemiBold)
+                    Button(
+                        onClick = { selectedPayslip = payslip },
+                        modifier = Modifier.weight(0.9f),
+                    ) {
+                        Text("Details")
+                    }
+                }
+            }
+        }
+    }
+
+    selectedPayslip?.let { payslip ->
+        PayslipDetailsDialog(
+            payslip = payslip,
+            onClose = { selectedPayslip = null },
+        )
+    }
+}
+
+@Composable
+private fun EmployeePayslipHistoryTab(payslips: List<PayslipDto>) {
+    LazyColumn(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        if (payslips.isEmpty()) {
+            item {
+                Text(
+                    "No payslip history yet.",
+                    modifier = Modifier.padding(12.dp),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                )
+            }
+        }
+
+        items(payslips, key = { it.id }) { payslip ->
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+            ) {
                 Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(payslip.periodLabel, fontWeight = FontWeight.Bold)
                     Text("Gross: ${formatCurrency(payslip.grossPay)}")
                     Text("Deductions: ${formatCurrency(payslip.totalDeductions)}")
-                    Text("Net: ${formatCurrency(payslip.netPay)}", fontWeight = FontWeight.SemiBold)
+                    Text("Net: ${formatCurrency(payslip.netPay)}")
+                    Text("Issued: ${payslip.issuedAt ?: "Pending"}")
                 }
             }
         }
@@ -224,34 +300,81 @@ private fun EmployeePayslipsTab(payslips: List<PayslipDto>) {
 }
 
 @Composable
-private fun EmployeeHistoryTab(payrolls: List<PayrollDto>) {
-    LazyColumn(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        if (payrolls.isEmpty()) {
-            item {
-                Text(
-                    "No payroll history yet.",
-                    modifier = Modifier.padding(12.dp),
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                )
-            }
-        }
+private fun PayslipDetailsDialog(
+    payslip: PayslipDto,
+    onClose: () -> Unit,
+) {
+    val governmentLabels = setOf(
+        "SSS Contribution",
+        "PhilHealth Contribution",
+        "Pag-IBIG Contribution",
+        "Withholding Tax",
+    )
+    val governmentDeductions = payslip.deductions.filter { it.label in governmentLabels }
+    val otherDeductions = payslip.deductions.filter { it.label !in governmentLabels }
 
-        items(payrolls, key = { it.id }) { payroll ->
-            Card(
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+    AlertDialog(
+        onDismissRequest = onClose,
+        title = { Text("Payslip Details") },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 460.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(payroll.payPeriodLabel, fontWeight = FontWeight.Bold)
-                    Text("Gross: ${formatCurrency(payroll.grossPay)}")
-                    Text("Deductions: ${formatCurrency(payroll.totalDeductions)}")
-                    Text("Net: ${formatCurrency(payroll.netPay)}")
-                    Text("Status: ${payroll.status}")
+                Text("Period: ${payslip.periodLabel}", fontWeight = FontWeight.Bold)
+                Text("Employee: ${payslip.employeeName}")
+                Text("Gross Pay: ${formatCurrency(payslip.grossPay)}")
+                Text("Total Deductions: ${formatCurrency(payslip.totalDeductions)}")
+                Text("Net Pay: ${formatCurrency(payslip.netPay)}", fontWeight = FontWeight.SemiBold)
+
+                HorizontalDivider()
+                Text("Government Contributions", fontWeight = FontWeight.Bold)
+                if (governmentDeductions.isEmpty()) {
+                    Text(
+                        "No government deductions listed.",
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                    )
+                } else {
+                    governmentDeductions.forEach { item ->
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text(item.label)
+                            Text(formatCurrency(item.amount), fontWeight = FontWeight.SemiBold)
+                        }
+                    }
+                }
+
+                if (otherDeductions.isNotEmpty()) {
+                    HorizontalDivider()
+                    Text("Other Deductions", fontWeight = FontWeight.Bold)
+                    otherDeductions.forEach { item ->
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text(item.label)
+                            Text(formatCurrency(item.amount), fontWeight = FontWeight.SemiBold)
+                        }
+                    }
+                }
+
+                if (payslip.allowances.isNotEmpty()) {
+                    HorizontalDivider()
+                    Text("Allowances", fontWeight = FontWeight.Bold)
+                    payslip.allowances.forEach { item ->
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text(item.label)
+                            Text(formatCurrency(item.amount), fontWeight = FontWeight.SemiBold)
+                        }
+                    }
                 }
             }
-        }
-    }
+        },
+        confirmButton = {
+            Button(onClick = onClose) {
+                Text("Close")
+            }
+        },
+    )
 }
 
 @Composable

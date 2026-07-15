@@ -1,29 +1,21 @@
 import DataTable from '../../../shared/components/ui/DataTable.jsx'
 import Panel from '../../../shared/components/ui/Panel.jsx'
-import Badge from '../../../shared/components/ui/Badge.jsx'
 
 const currency = (v) =>
   new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(v ?? 0)
 
-const statusTone = (status) =>
-  status === 'PROCESSED'
-    ? 'success'
-    : status === 'DRAFT'
-      ? 'warning'
-      : 'neutral'
-
 /**
- * Employee Payroll History section — displays payroll records table.
+ * Employee Payslip History section — displays historical payslip records.
  *
  * @param {object} props
- * @param {Array}  props.payrolls
+ * @param {Array}  props.payslips
  */
-export function EmployeePayrollHistorySection({ payrolls }) {
+export function EmployeePayrollHistorySection({ payslips }) {
   return (
-    <Panel title="Payroll History" subtitle="Your last pay periods">
+    <Panel title="Payslip History" subtitle="Your issued payslips by pay period">
       <DataTable
         columns={[
-          { key: 'payPeriodLabel', header: 'Pay Period' },
+          { key: 'periodLabel', header: 'Pay Period' },
           {
             key: 'grossPay',
             header: 'Gross Pay',
@@ -43,20 +35,12 @@ export function EmployeePayrollHistorySection({ payrolls }) {
             render: (r) => <strong>{currency(r.netPay)}</strong>,
           },
           {
-            key: 'status',
-            header: 'Status',
-            align: 'center',
-            render: (r) => (
-              <Badge
-                tone={statusTone(r.status)}
-                dot
-              >
-                {r.status}
-              </Badge>
-            ),
+            key: 'issuedAt',
+            header: 'Issued',
+            render: (r) => (r.issuedAt ? new Date(r.issuedAt).toLocaleDateString() : 'Pending'),
           },
         ]}
-        rows={payrolls}
+        rows={payslips}
       />
     </Panel>
   )

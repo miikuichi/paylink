@@ -3,7 +3,7 @@ name: Phase 2 - Mobile Release Ready
 on:
   workflow_dispatch:
   push:
-    branches: [ master ]
+    branches: [master]
     paths:
       - mobile/**
       - .github/workflows/phase2-mobile-release-ready.yml

@@ -18,7 +18,7 @@ import "./EmployeeDashboard.css";
 const NAV_ITEMS = [
   { key: "overview", label: "Overview", icon: <GridIcon /> },
   { key: "payslips", label: "My Payslips", icon: <DocIcon /> },
-  { key: "history", label: "Payroll History", icon: <WalletIcon /> },
+  { key: "history", label: "Payslip History", icon: <WalletIcon /> },
 ];
 
 const EmployeeDashboard = () => {
@@ -72,7 +72,7 @@ const EmployeeDashboard = () => {
       )}
 
       {activeKey === "history" && (
-        <EmployeePayrollHistorySection payrolls={payrolls} />
+        <EmployeePayrollHistorySection payslips={payslips} />
       )}
     </DashboardLayout>
   );

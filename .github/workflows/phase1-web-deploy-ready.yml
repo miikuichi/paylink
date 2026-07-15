@@ -3,7 +3,7 @@ name: Phase 1 - Web Deploy Ready
 on:
   workflow_dispatch:
   push:
-    branches: [ master ]
+    branches: [master]
     paths:
       - web/**
       - .github/workflows/phase1-web-deploy-ready.yml

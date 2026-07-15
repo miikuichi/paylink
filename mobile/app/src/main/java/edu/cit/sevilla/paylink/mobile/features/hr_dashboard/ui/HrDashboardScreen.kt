@@ -1,8 +1,11 @@
 package edu.cit.sevilla.paylink.mobile.features.hr_dashboard.ui
 
+import android.content.Context
+import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,6 +16,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -31,23 +35,31 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import edu.cit.sevilla.paylink.mobile.features.auth.data.model.Session
 import edu.cit.sevilla.paylink.mobile.features.employees.data.model.CreateEmployeeRequest
+import edu.cit.sevilla.paylink.mobile.features.employees.data.model.EmployeeProfile
 import edu.cit.sevilla.paylink.mobile.features.payperiods.data.model.PayPeriodDto
+import edu.cit.sevilla.paylink.mobile.features.payroll.data.model.AdditionalPayrollItem
 import edu.cit.sevilla.paylink.mobile.features.payroll.data.model.PayrollDto
 import edu.cit.sevilla.paylink.mobile.core.ui.theme.Cream100
 import edu.cit.sevilla.paylink.mobile.core.ui.theme.Cream200
 import edu.cit.sevilla.paylink.mobile.core.ui.theme.Gold100
 import edu.cit.sevilla.paylink.mobile.core.ui.theme.Gold500
 import edu.cit.sevilla.paylink.mobile.core.ui.theme.Maroon800
+import java.time.LocalDate
+import java.time.temporal.ChronoUnit
+import kotlin.math.round
+import kotlin.math.roundToInt
 
 private val hrTabs = listOf("Overview", "Employees", "Payroll", "Payslips")
 
@@ -141,7 +153,9 @@ fun HrDashboardScreen(
                     state = state,
                     onSelectPeriod = { viewModel.selectPeriod(session.token, it) },
                     onAddPeriodClick = { showAddPeriodDialog = true },
-                    onRunPayroll = { viewModel.processPayroll(session.token, it) },
+                    onRunPayroll = { employeeId, items ->
+                        viewModel.processPayroll(session.token, employeeId, items)
+                    },
                     onGeneratePayslip = { viewModel.generatePayslip(session.token, it) },
                 )
 
@@ -278,9 +292,19 @@ private fun HrPayrollTab(
     state: HrDashboardState,
     onSelectPeriod: (Long) -> Unit,
     onAddPeriodClick: () -> Unit,
-    onRunPayroll: (Long) -> Unit,
+    onRunPayroll: (Long, List<AdditionalPayrollItem>) -> Unit,
     onGeneratePayslip: (Long) -> Unit,
 ) {
+    val context = LocalContext.current
+    val activeEmployees = remember(state.employees) { state.employees.filter { it.status == "ACTIVE" } }
+    val selectedPeriod = remember(state.selectedPeriodId, state.payPeriods) {
+        state.payPeriods.firstOrNull { it.id == state.selectedPeriodId }
+    }
+
+    var previewEmployee by remember { mutableStateOf<EmployeeProfile?>(null) }
+    val previewItems = remember { mutableStateListOf<DraftAdditionalItem>() }
+    var expandedPayrollId by remember { mutableStateOf<Long?>(null) }
+
     LazyColumn(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         item {
             PayPeriodSelector(
@@ -297,42 +321,298 @@ private fun HrPayrollTab(
             }
         }
 
-        items(state.employees.filter { it.status == "ACTIVE" }, key = { it.id }) { employee ->
-            val existingPayroll = state.payrolls.firstOrNull { it.employeeId == employee.id }
+        item {
             Card(
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
             ) {
-                Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text("${employee.firstName} ${employee.lastName}", fontWeight = FontWeight.Bold)
-                    Text("${employee.employeeNumber} · Rate ${formatCurrency(employee.basicRate ?: 0.0)}")
+                Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Process Payroll", fontWeight = FontWeight.Bold)
+                    Text(
+                        "Preview estimated values first, or run immediately.",
+                        style = MaterialTheme.typography.bodySmall,
+                    )
 
-                    if (existingPayroll == null) {
-                        Button(
-                            onClick = { onRunPayroll(employee.id) },
-                            enabled = !state.busyIds.contains(employee.id) && state.selectedPeriodId != null,
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Text(if (state.busyIds.contains(employee.id)) "Processing..." else "Run Payroll")
-                        }
+                    if (activeEmployees.isEmpty()) {
+                        Text(
+                            "No active employees available for payroll processing.",
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                        )
                     } else {
-                        Text("Payroll: ${formatCurrency(existingPayroll.netPay)} (${existingPayroll.status})")
-                        if (existingPayroll.hasPayslip) {
-                            Text("Payslip already generated", color = MaterialTheme.colorScheme.primary)
-                        } else {
-                            Button(
-                                onClick = { onGeneratePayslip(existingPayroll.id) },
-                                enabled = !state.busyIds.contains(existingPayroll.id),
-                                modifier = Modifier.fillMaxWidth(),
-                            ) {
-                                Text(if (state.busyIds.contains(existingPayroll.id)) "Generating..." else "Generate Payslip")
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(max = 320.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            items(activeEmployees, key = { it.id }) { employee ->
+                                val existingPayroll = state.payrolls.firstOrNull { it.employeeId == employee.id }
+                                Card(
+                                    shape = RoundedCornerShape(14.dp),
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                    ),
+                                ) {
+                                    Column(
+                                        modifier = Modifier.padding(12.dp),
+                                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                                    ) {
+                                        Text("${employee.firstName} ${employee.lastName}", fontWeight = FontWeight.Bold)
+                                        Text("${employee.employeeNumber} · Rate ${formatCurrency(employee.basicRate ?: 0.0)}")
+
+                                        if (existingPayroll == null) {
+                                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                                Button(
+                                                    onClick = {
+                                                        previewEmployee = employee
+                                                        previewItems.clear()
+                                                    },
+                                                    enabled = state.selectedPeriodId != null,
+                                                    modifier = Modifier.weight(1f),
+                                                ) {
+                                                    Text("Preview")
+                                                }
+                                                Button(
+                                                    onClick = { onRunPayroll(employee.id, emptyList()) },
+                                                    enabled = !state.busyIds.contains(employee.id) && state.selectedPeriodId != null,
+                                                    modifier = Modifier.weight(1f),
+                                                ) {
+                                                    Text(if (state.busyIds.contains(employee.id)) "Processing..." else "Run")
+                                                }
+                                            }
+                                        } else {
+                                            Text("Payroll: ${formatCurrency(existingPayroll.netPay)} (${existingPayroll.status})")
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
         }
+
+        item {
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+            ) {
+                Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("Payroll Results", fontWeight = FontWeight.Bold)
+                        if (state.payrolls.isNotEmpty()) {
+                            Button(onClick = { sharePayrollCsv(context, state.payrolls) }) {
+                                Text("Export CSV")
+                            }
+                        }
+                    }
+
+                    if (state.payrolls.isEmpty()) {
+                        Text(
+                            "No payroll results for this period yet.",
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                        )
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(max = 340.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            items(state.payrolls, key = { it.id }) { payroll ->
+                                val isExpanded = expandedPayrollId == payroll.id
+                                val deductionItems = payroll.items.filter { it.itemType == "DEDUCTION" }
+                                Card(
+                                    shape = RoundedCornerShape(14.dp),
+                                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                                ) {
+                                    Column(
+                                        modifier = Modifier.padding(12.dp),
+                                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                                    ) {
+                                        Text(payroll.employeeName, fontWeight = FontWeight.Bold)
+                                        Text("Gross: ${formatCurrency(payroll.grossPay)}")
+                                        Text("Deductions: ${formatCurrency(payroll.totalDeductions)}")
+                                        Text("Net: ${formatCurrency(payroll.netPay)}")
+
+                                        Button(
+                                            onClick = {
+                                                expandedPayrollId = if (isExpanded) null else payroll.id
+                                            },
+                                        ) {
+                                            Text(if (isExpanded) "Hide Deductions" else "Show Deductions")
+                                        }
+
+                                        if (isExpanded) {
+                                            if (deductionItems.isEmpty()) {
+                                                Text(
+                                                    "No deduction line items.",
+                                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                                                )
+                                            } else {
+                                                deductionItems.forEach { item ->
+                                                    Row(
+                                                        modifier = Modifier.fillMaxWidth(),
+                                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                                    ) {
+                                                        Text(item.label)
+                                                        Text(formatCurrency(item.amount), fontWeight = FontWeight.SemiBold)
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        if (payroll.hasPayslip) {
+                                            Text("Payslip already generated", color = MaterialTheme.colorScheme.primary)
+                                        } else {
+                                            Button(
+                                                onClick = { onGeneratePayslip(payroll.id) },
+                                                enabled = !state.busyIds.contains(payroll.id),
+                                                modifier = Modifier.fillMaxWidth(),
+                                            ) {
+                                                Text(if (state.busyIds.contains(payroll.id)) "Generating..." else "Generate Payslip")
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (previewEmployee != null && selectedPeriod != null) {
+        val estimate = estimatePayrollPreview(
+            monthlyBasicRate = previewEmployee?.basicRate ?: 0.0,
+            startDate = selectedPeriod.startDate,
+            endDate = selectedPeriod.endDate,
+            additionalItems = previewItems
+                .mapNotNull { draft ->
+                    val amount = draft.amount.toDoubleOrNull() ?: return@mapNotNull null
+                    val label = draft.label.trim()
+                    if (label.isBlank() || amount <= 0.0) return@mapNotNull null
+                    AdditionalPayrollItem(draft.itemType, label, amount)
+                },
+        )
+
+        AlertDialog(
+            onDismissRequest = { previewEmployee = null },
+            title = {
+                Text("Payroll Preview: ${previewEmployee?.firstName} ${previewEmployee?.lastName}")
+            },
+            text = {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 460.dp)
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Text(
+                        "Preview only. Final values are computed by backend on process.",
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                    Text("Period days: ${estimate.days}")
+                    Text("Proration ratio: ${"%.4f".format(estimate.ratio)}")
+                    Text("Basic pay (prorated): ${formatCurrency(estimate.basicPay)}")
+                    Text("Gross pay estimate: ${formatCurrency(estimate.grossPay)}")
+
+                    HorizontalDivider()
+                    Text("Additional Items", fontWeight = FontWeight.Bold)
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Button(
+                            onClick = {
+                                previewItems.add(DraftAdditionalItem(itemType = "ALLOWANCE"))
+                            },
+                        ) {
+                            Text("Add Allowance")
+                        }
+                        Button(
+                            onClick = {
+                                previewItems.add(DraftAdditionalItem(itemType = "DEDUCTION"))
+                            },
+                        ) {
+                            Text("Add Deduction")
+                        }
+                    }
+
+                    previewItems.forEachIndexed { index, item ->
+                        Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
+                            Column(modifier = Modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                Text(item.itemType, fontWeight = FontWeight.Bold)
+                                OutlinedTextField(
+                                    value = item.label,
+                                    onValueChange = { value -> previewItems[index] = item.copy(label = value) },
+                                    label = { Text("Label") },
+                                    modifier = Modifier.fillMaxWidth(),
+                                )
+                                OutlinedTextField(
+                                    value = item.amount,
+                                    onValueChange = { value -> previewItems[index] = item.copy(amount = value) },
+                                    label = { Text("Amount") },
+                                    modifier = Modifier.fillMaxWidth(),
+                                )
+                                Button(onClick = { previewItems.removeAt(index) }) {
+                                    Text("Remove")
+                                }
+                            }
+                        }
+                    }
+
+                    HorizontalDivider()
+                    Text("Estimated Deductions", fontWeight = FontWeight.Bold)
+                    estimate.statutory.forEach { (label, amount) ->
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text(label)
+                            Text(formatCurrency(amount), fontWeight = FontWeight.SemiBold)
+                        }
+                    }
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("Additional Deductions")
+                        Text(formatCurrency(estimate.extraDeductions), fontWeight = FontWeight.SemiBold)
+                    }
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("Total Deductions")
+                        Text(formatCurrency(estimate.totalDeductions), fontWeight = FontWeight.Bold)
+                    }
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("Net Pay Estimate")
+                        Text(formatCurrency(estimate.netPay), fontWeight = FontWeight.Bold)
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val validItems = previewItems
+                            .mapNotNull { draft ->
+                                val amount = draft.amount.toDoubleOrNull() ?: return@mapNotNull null
+                                val label = draft.label.trim()
+                                if (label.isBlank() || amount <= 0.0) return@mapNotNull null
+                                AdditionalPayrollItem(draft.itemType, label, amount)
+                            }
+                        onRunPayroll(previewEmployee?.id ?: return@Button, validItems)
+                        previewEmployee = null
+                        previewItems.clear()
+                    },
+                    enabled = !state.busyIds.contains(previewEmployee?.id ?: -1L),
+                ) {
+                    Text("Confirm & Process")
+                }
+            },
+            dismissButton = {
+                Button(onClick = {
+                    previewEmployee = null
+                    previewItems.clear()
+                }) {
+                    Text("Cancel")
+                }
+            },
+        )
     }
 }
 
@@ -584,6 +864,154 @@ private fun DashboardErrorBanner(
         }
     }
 }
+
+private data class DraftAdditionalItem(
+    val itemType: String,
+    val label: String = "",
+    val amount: String = "",
+)
+
+private data class PayrollPreviewEstimate(
+    val days: Long,
+    val ratio: Double,
+    val basicPay: Double,
+    val grossPay: Double,
+    val statutory: List<Pair<String, Double>>,
+    val extraDeductions: Double,
+    val totalDeductions: Double,
+    val netPay: Double,
+)
+
+private fun estimatePayrollPreview(
+    monthlyBasicRate: Double,
+    startDate: String,
+    endDate: String,
+    additionalItems: List<AdditionalPayrollItem>,
+): PayrollPreviewEstimate {
+    val days = runCatching {
+        ChronoUnit.DAYS.between(LocalDate.parse(startDate), LocalDate.parse(endDate)) + 1
+    }.getOrDefault(30L).coerceAtLeast(1L)
+
+    val ratio = days / 30.0
+    val extraAllowances = additionalItems
+        .filter { it.itemType == "ALLOWANCE" }
+        .sumOf { it.amount }
+    val extraDeductions = additionalItems
+        .filter { it.itemType == "DEDUCTION" }
+        .sumOf { it.amount }
+
+    val basicPay = round2(monthlyBasicRate * ratio)
+    val grossPay = round2(basicPay + extraAllowances)
+
+    val sssMonthly = round2((monthlyBasicRate.coerceIn(4250.0, 30000.0) / 500.0).roundToInt() * 500 * 0.045)
+    val philhealthMonthly = round2(monthlyBasicRate.coerceIn(10000.0, 100000.0) * 0.025)
+    val pagibigMonthly = round2(
+        if (monthlyBasicRate <= 1500.0) monthlyBasicRate * 0.01
+        else minOf(monthlyBasicRate * 0.02, 100.0),
+    )
+    val taxable = monthlyBasicRate - sssMonthly - philhealthMonthly - pagibigMonthly
+    val withholdingMonthly = round2(
+        when {
+            taxable <= 20833.0 -> 0.0
+            taxable <= 33333.0 -> (taxable - 20833.0) * 0.2
+            taxable <= 66667.0 -> 2500.0 + (taxable - 33333.0) * 0.25
+            taxable <= 166667.0 -> 10833.33 + (taxable - 66667.0) * 0.30
+            taxable <= 666667.0 -> 40833.33 + (taxable - 166667.0) * 0.32
+            else -> 200833.33 + (taxable - 666667.0) * 0.35
+        },
+    )
+
+    val statutory = listOf(
+        "SSS Contribution" to round2(sssMonthly * ratio),
+        "PhilHealth Contribution" to round2(philhealthMonthly * ratio),
+        "Pag-IBIG Contribution" to round2(pagibigMonthly * ratio),
+        "Withholding Tax" to round2(withholdingMonthly * ratio),
+    )
+
+    val statutoryTotal = statutory.sumOf { it.second }
+    val totalDeductions = round2(statutoryTotal + extraDeductions)
+    val netPay = round2(grossPay - totalDeductions)
+
+    return PayrollPreviewEstimate(
+        days = days,
+        ratio = ratio,
+        basicPay = basicPay,
+        grossPay = grossPay,
+        statutory = statutory,
+        extraDeductions = round2(extraDeductions),
+        totalDeductions = totalDeductions,
+        netPay = netPay,
+    )
+}
+
+private fun sharePayrollCsv(context: Context, payrolls: List<PayrollDto>) {
+    if (payrolls.isEmpty()) return
+
+    val header = listOf(
+        "Employee Name",
+        "Employee Number",
+        "Pay Period",
+        "Status",
+        "Gross Pay",
+        "SSS Contribution",
+        "PhilHealth Contribution",
+        "Pag-IBIG Contribution",
+        "Withholding Tax",
+        "Additional Deductions",
+        "Total Deductions",
+        "Net Pay",
+        "Processed At",
+    ).joinToString(",")
+
+    val lines = payrolls.map { payroll ->
+        val sss = payroll.items.filter { it.itemType == "DEDUCTION" && it.label == "SSS Contribution" }.sumOf { it.amount }
+        val philhealth = payroll.items.filter { it.itemType == "DEDUCTION" && it.label == "PhilHealth Contribution" }.sumOf { it.amount }
+        val pagibig = payroll.items.filter { it.itemType == "DEDUCTION" && it.label == "Pag-IBIG Contribution" }.sumOf { it.amount }
+        val tax = payroll.items.filter { it.itemType == "DEDUCTION" && it.label == "Withholding Tax" }.sumOf { it.amount }
+        val statutory = sss + philhealth + pagibig + tax
+        val additionalDeductions = payroll.totalDeductions - statutory
+
+        listOf(
+            csvCell(payroll.employeeName),
+            csvCell(payroll.employeeNumber),
+            csvCell(payroll.payPeriodLabel),
+            csvCell(payroll.status),
+            round2(payroll.grossPay).toString(),
+            round2(sss).toString(),
+            round2(philhealth).toString(),
+            round2(pagibig).toString(),
+            round2(tax).toString(),
+            round2(additionalDeductions).toString(),
+            round2(payroll.totalDeductions).toString(),
+            round2(payroll.netPay).toString(),
+            csvCell(payroll.processedAt ?: ""),
+        ).joinToString(",")
+    }
+
+    val csv = buildString {
+        appendLine(header)
+        lines.forEach { appendLine(it) }
+    }
+
+    val shareIntent = Intent(Intent.ACTION_SEND).apply {
+        type = "text/csv"
+        putExtra(Intent.EXTRA_SUBJECT, "Payroll Summary CSV")
+        putExtra(Intent.EXTRA_TEXT, csv)
+    }
+
+    context.startActivity(Intent.createChooser(shareIntent, "Share payroll summary"))
+}
+
+private fun csvCell(value: String): String {
+    val escaped = value.replace("\"", "\"\"")
+    return if (escaped.contains(',') || escaped.contains('"') || escaped.contains('\n')) {
+        "\"$escaped\""
+    } else {
+        escaped
+    }
+}
+
+private fun round2(value: Double): Double = round(value * 100.0) / 100.0
 
 private fun errorHint(message: String): String {
     val lower = message.lowercase()

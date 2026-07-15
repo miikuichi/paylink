@@ -10,6 +10,7 @@ import edu.cit.sevilla.paylink.mobile.features.employees.data.repository.Employe
 import edu.cit.sevilla.paylink.mobile.features.payperiods.data.model.CreatePayPeriodRequest
 import edu.cit.sevilla.paylink.mobile.features.payperiods.data.model.PayPeriodDto
 import edu.cit.sevilla.paylink.mobile.features.payperiods.data.repository.PayPeriodRepository
+import edu.cit.sevilla.paylink.mobile.features.payroll.data.model.AdditionalPayrollItem
 import edu.cit.sevilla.paylink.mobile.features.payroll.data.model.PayrollDto
 import edu.cit.sevilla.paylink.mobile.features.payroll.data.model.ProcessPayrollRequest
 import edu.cit.sevilla.paylink.mobile.features.payroll.data.repository.PayrollRepository
@@ -128,7 +129,11 @@ class HrDashboardViewModel(
         }
     }
 
-    fun processPayroll(token: String, employeeId: Long) {
+    fun processPayroll(
+        token: String,
+        employeeId: Long,
+        additionalItems: List<AdditionalPayrollItem> = emptyList(),
+    ) {
         val periodId = _state.value.selectedPeriodId ?: return
         _state.value = _state.value.copy(busyIds = _state.value.busyIds + employeeId)
 
@@ -136,7 +141,11 @@ class HrDashboardViewModel(
             runCatching {
                 payrollRepository.processPayroll(
                     bearer(token),
-                    ProcessPayrollRequest(employeeId = employeeId, payPeriodId = periodId),
+                    ProcessPayrollRequest(
+                        employeeId = employeeId,
+                        payPeriodId = periodId,
+                        additionalItems = additionalItems,
+                    ),
                 )
             }.onSuccess {
                 refreshPeriodData(token, periodId)

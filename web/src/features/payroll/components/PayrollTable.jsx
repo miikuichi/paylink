@@ -298,7 +298,13 @@ export function PayrollTable({
                       </Badge>
                     );
                   return (
-                    <div style={{ display: "inline-flex", gap: 8, flexWrap: "wrap" }}>
+                    <div
+                      style={{
+                        display: "inline-flex",
+                        gap: 8,
+                        flexWrap: "wrap",
+                      }}
+                    >
                       <Button
                         size="sm"
                         variant="ghost"
@@ -335,7 +341,12 @@ export function PayrollTable({
           <div
             className="modal"
             onClick={(e) => e.stopPropagation()}
-            style={{ width: 640, maxWidth: "96vw", maxHeight: "88vh", overflowY: "auto" }}
+            style={{
+              width: 640,
+              maxWidth: "96vw",
+              maxHeight: "88vh",
+              overflowY: "auto",
+            }}
           >
             <h3 style={{ margin: "0 0 8px" }}>
               Payroll Preview: {previewEmployee.firstName}{" "}

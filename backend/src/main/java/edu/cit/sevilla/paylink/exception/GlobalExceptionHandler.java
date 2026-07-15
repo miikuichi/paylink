@@ -12,9 +12,52 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Global exception handler for all REST endpoints.
+ * Ensures consistent error response format and prevents stack trace exposure in production.
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    /**
+     * Handle custom ApiException and its subclasses.
+     */
+    @ExceptionHandler(ApiException.class)
+    public ResponseEntity<ApiError> handleApiException(ApiException ex) {
+        ApiError error = new ApiError(ex.getHttpStatus(), getErrorType(ex), ex.getMessage());
+        return ResponseEntity.status(ex.getHttpStatus()).body(error);
+    }
+
+    /**
+     * Handle ResourceNotFoundException (404).
+     */
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ApiError> handleResourceNotFound(ResourceNotFoundException ex) {
+        ApiError error = new ApiError(HttpStatus.NOT_FOUND.value(), "Not Found", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+
+    /**
+     * Handle ValidationException (400).
+     */
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<ApiError> handleValidationException(ValidationException ex) {
+        ApiError error = new ApiError(HttpStatus.BAD_REQUEST.value(), "Validation Error", ex.getMessage());
+        return ResponseEntity.badRequest().body(error);
+    }
+
+    /**
+     * Handle InvalidPayrollCalculationException (422).
+     */
+    @ExceptionHandler(InvalidPayrollCalculationException.class)
+    public ResponseEntity<ApiError> handleInvalidPayrollCalculation(InvalidPayrollCalculationException ex) {
+        ApiError error = new ApiError(HttpStatus.UNPROCESSABLE_ENTITY.value(), "Payroll Calculation Error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error);
+    }
+
+    /**
+     * Handle validation errors from @Valid annotations (400).
+     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiError> handleValidation(MethodArgumentNotValidException ex) {
         Map<String, String> fieldErrors = new HashMap<>();
@@ -28,42 +71,76 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(error);
     }
 
+    /**
+     * Handle JPA EntityNotFoundException (404).
+     */
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ApiError> handleNotFound(EntityNotFoundException ex) {
         ApiError error = new ApiError(HttpStatus.NOT_FOUND.value(), "Not Found", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
+    /**
+     * Handle IllegalArgumentException (400).
+     */
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiError> handleIllegalArgument(IllegalArgumentException ex) {
-        ApiError error = new ApiError(HttpStatus.CONFLICT.value(), "Conflict", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+        ApiError error = new ApiError(HttpStatus.BAD_REQUEST.value(), "Invalid Argument", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
+    /**
+     * Handle IllegalStateException (409).
+     */
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<ApiError> handleIllegalState(IllegalStateException ex) {
         ApiError error = new ApiError(HttpStatus.CONFLICT.value(), "Conflict", ex.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
     }
 
+    /**
+     * Handle authentication failures (401).
+     */
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ApiError> handleBadCredentials(BadCredentialsException ex) {
         ApiError error = new ApiError(HttpStatus.UNAUTHORIZED.value(), "Unauthorized", "Invalid username or password");
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
     }
 
+    /**
+     * Handle disabled user accounts (403).
+     */
     @ExceptionHandler(DisabledException.class)
     public ResponseEntity<ApiError> handleDisabled(DisabledException ex) {
         ApiError error = new ApiError(HttpStatus.FORBIDDEN.value(), "Forbidden", "This account has been disabled");
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     }
 
+    /**
+     * Handle all other exceptions (500) - NO STACK TRACE EXPOSED.
+     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleGeneric(Exception ex) {
+        // Log the full exception details server-side for debugging
+        // Do NOT include in response for security reasons
         ApiError error = new ApiError(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 "Internal Server Error",
                 "Something went wrong. Please try again later.");
         return ResponseEntity.internalServerError().body(error);
+    }
+
+    /**
+     * Determine the error type from exception class.
+     */
+    private String getErrorType(ApiException ex) {
+        if (ex instanceof ResourceNotFoundException) {
+            return "Not Found";
+        } else if (ex instanceof ValidationException) {
+            return "Validation Error";
+        } else if (ex instanceof InvalidPayrollCalculationException) {
+            return "Payroll Calculation Error";
+        }
+        return "API Error";
     }
 }

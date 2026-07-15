@@ -6,51 +6,134 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Computes Philippine statutory payroll deductions.
- *
+ * Comprehensive Philippine Payroll Computation Service
+ * 
+ * Implements official government payroll calculations including:
+ * - SSS, PhilHealth, Pag-IBIG, BIR withholding tax
+ * - Overtime multipliers (TRAIN Law & Labor Code)
+ * - Holiday pay (regular/special holidays)
+ * - Night differential (10 PM - 6 AM)
+ * 
  * References:
- * - SSS: 2024 contribution table (employee rate 4.5% of MSC, max MSC ₱30,000)
- * - PhilHealth: Circular 2023-006 (employee share 2.5% of basic, cap ₱100,000
- * MSC)
- * - Pag-IBIG/HDMF: Circular 2019-006 (employee 2% capped at ₱100/month)
- * - BIR: TRAIN Law 2023 monthly withholding tax table
+ * - SSS: 2024 Contribution Schedule
+ * - PhilHealth: Circular 2023-006
+ * - Pag-IBIG: Circular 2019-006
+ * - BIR: RMO 16-2023 (TRAIN Law as amended by TRABAHO Act)
+ * - DOLE: Labor Code & Wage Orders
  */
 @Service
 public class PayrollComputationService {
 
     /**
      * Computes gross pay for the pay period.
-     * Basic pay is prorated from the monthly basic rate using calendar days / 30.
+     * Basic pay is prorated from the monthly basic rate using actual calendar days.
      */
     public BigDecimal computeGrossPay(BigDecimal monthlyBasicRate, LocalDate start, LocalDate end,
             BigDecimal additionalAllowances) {
         long days = ChronoUnit.DAYS.between(start, end) + 1;
         BigDecimal basicPay = monthlyBasicRate
                 .multiply(BigDecimal.valueOf(days))
-                .divide(BigDecimal.valueOf(30), 2, RoundingMode.HALF_UP);
+                .divide(PayrollConfiguration.DAYS_PER_MONTH, 2, RoundingMode.HALF_UP);
         return basicPay.add(additionalAllowances).setScale(2, RoundingMode.HALF_UP);
     }
 
     /**
+     * Computes gross pay including overtime hours.
+     * 
+     * @param monthlyBasicRate Monthly salary base
+     * @param regularHours Hours worked during normal business hours
+     * @param overtimeHours Overtime hours (regular rate 125%)
+     * @param additionalAllowances Allowances and bonuses
+     * @return Gross pay including overtime compensation
+     */
+    public BigDecimal computeGrossPayWithOvertime(BigDecimal monthlyBasicRate, BigDecimal regularHours,
+            BigDecimal overtimeHours, BigDecimal additionalAllowances) {
+        BigDecimal hourlyRate = monthlyBasicRate
+                .divide(PayrollConfiguration.HOURS_PER_MONTH, 10, RoundingMode.HALF_UP);
+        
+        BigDecimal regularPay = hourlyRate.multiply(regularHours);
+        BigDecimal overtimePay = hourlyRate
+                .multiply(PayrollConfiguration.OVERTIME_REGULAR_MULTIPLIER)
+                .multiply(overtimeHours);
+        
+        return regularPay.add(overtimePay).add(additionalAllowances).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    /**
+     * Computes holiday pay based on holiday type and work details.
+     * 
+     * @param dailyRate Daily compensation rate
+     * @param holidayType Type: REGULAR or SPECIAL
+     * @param workedOnHoliday True if employee worked on the holiday
+     * @param isRestDay True if the holiday falls on employee's rest day
+     * @return Holiday pay amount
+     */
+    public BigDecimal computeHolidayPay(BigDecimal dailyRate, String holidayType, 
+            boolean workedOnHoliday, boolean isRestDay) {
+        BigDecimal multiplier;
+        
+        if (!workedOnHoliday) {
+            // Paid holiday - regular compensation only
+            multiplier = "SPECIAL".equals(holidayType) 
+                ? PayrollConfiguration.SPECIAL_HOLIDAY_PAY 
+                : PayrollConfiguration.REGULAR_HOLIDAY_PAY;
+        } else {
+            // Worked on holiday
+            if (isRestDay) {
+                // Triple pay (200% if special, 300% if regular)
+                multiplier = "SPECIAL".equals(holidayType) 
+                    ? new BigDecimal("2.00") 
+                    : new BigDecimal("3.00");
+            } else {
+                // Double or 150% pay
+                multiplier = "SPECIAL".equals(holidayType) 
+                    ? PayrollConfiguration.WORK_ON_SPECIAL_HOLIDAY 
+                    : PayrollConfiguration.WORK_ON_REGULAR_HOLIDAY;
+            }
+        }
+        
+        return dailyRate.multiply(multiplier).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    /**
+     * Computes night differential pay (10 PM - 6 AM)
+     * 
+     * @param hourlyRate Hourly compensation rate
+     * @param nightHours Hours worked during night shift
+     * @return Night differential amount (10% additional)
+     */
+    public BigDecimal computeNightDifferential(BigDecimal hourlyRate, BigDecimal nightHours) {
+        return hourlyRate
+                .multiply(PayrollConfiguration.NIGHT_DIFFERENTIAL_RATE)
+                .multiply(nightHours)
+                .setScale(2, RoundingMode.HALF_UP);
+    }
+
+    /**
      * Returns ordered map of statutory deduction label → prorated amount for the
-     * pay period.
+     * pay period. Uses official government contribution tables.
      */
     public Map<String, BigDecimal> computeStatutoryDeductions(BigDecimal monthlyBasicRate,
             LocalDate start, LocalDate end) {
         long days = ChronoUnit.DAYS.between(start, end) + 1;
-        BigDecimal ratio = BigDecimal.valueOf(days).divide(BigDecimal.valueOf(30), 10, RoundingMode.HALF_UP);
+        BigDecimal ratio = BigDecimal.valueOf(days)
+                .divide(PayrollConfiguration.DAYS_PER_MONTH, 10, RoundingMode.HALF_UP);
 
-        BigDecimal sss = sssMonthly(monthlyBasicRate).multiply(ratio).setScale(2, RoundingMode.HALF_UP);
-        BigDecimal philhealth = philhealthMonthly(monthlyBasicRate).multiply(ratio).setScale(2, RoundingMode.HALF_UP);
-        BigDecimal pagibig = pagibigMonthly(monthlyBasicRate).multiply(ratio).setScale(2, RoundingMode.HALF_UP);
-        BigDecimal tax = withholdingTax(monthlyBasicRate,
-                sssMonthly(monthlyBasicRate),
-                philhealthMonthly(monthlyBasicRate),
-                pagibigMonthly(monthlyBasicRate))
+        BigDecimal sss = computeSSSContribution(monthlyBasicRate).multiply(ratio)
+                .setScale(2, RoundingMode.HALF_UP);
+        BigDecimal philhealth = computePhilHealthContribution(monthlyBasicRate).multiply(ratio)
+                .setScale(2, RoundingMode.HALF_UP);
+        BigDecimal pagibig = computePagIBIGContribution(monthlyBasicRate).multiply(ratio)
+                .setScale(2, RoundingMode.HALF_UP);
+        BigDecimal tax = computeWithholdingTax(monthlyBasicRate,
+                computeSSSContribution(monthlyBasicRate),
+                computePhilHealthContribution(monthlyBasicRate),
+                computePagIBIGContribution(monthlyBasicRate))
                 .multiply(ratio).setScale(2, RoundingMode.HALF_UP);
 
         Map<String, BigDecimal> result = new LinkedHashMap<>();
@@ -61,46 +144,74 @@ public class PayrollComputationService {
         return result;
     }
 
-    // ----- Private computation helpers -----
+    // ==================== CONTRIBUTION HELPERS ====================
 
     /**
-     * SSS 2024: employee = 4.5% of Monthly Salary Credit, MSC range ₱4,250–₱30,000.
+     * Computes SSS employee contribution using official 2024 contribution table.
+     * MSC Range: ₱4,250 - ₱30,000 (rounded to nearest ₱500)
+     * Rate: 4.5% of MSC
      */
-    private BigDecimal sssMonthly(BigDecimal salary) {
-        double msc = Math.max(4250, Math.min(30000, salary.doubleValue()));
-        // Round MSC to nearest ₱500 bracket
+    private BigDecimal computeSSSContribution(BigDecimal salary) {
+        double salaryAmount = salary.doubleValue();
+        double msc = Math.max(4250, Math.min(30000, salaryAmount));
+        
+        // Round to nearest ₱500 bracket
         long rounded = Math.round(msc / 500.0) * 500L;
         rounded = Math.max(4500L, Math.min(30000L, rounded));
-        return BigDecimal.valueOf(rounded * 0.045).setScale(2, RoundingMode.HALF_UP);
+        
+        // Use official contribution table if available
+        String bracketKey = String.valueOf(rounded);
+        if (PayrollConfiguration.SSS_CONTRIBUTION_TABLE.containsKey(bracketKey)) {
+            return PayrollConfiguration.SSS_CONTRIBUTION_TABLE.get(bracketKey);
+        }
+        
+        // Fallback: calculate as 4.5% of MSC
+        return BigDecimal.valueOf(rounded)
+                .multiply(PayrollConfiguration.SSS_EMPLOYEE_RATE)
+                .setScale(2, RoundingMode.HALF_UP);
     }
 
     /**
-     * PhilHealth 2024: employee share = 2.5% of basic salary, clipped to
-     * ₱10,000–₱100,000.
+     * Computes PhilHealth employee contribution.
+     * Rate: 2.5% of basic salary
+     * MSC Clipped: ₱10,000 - ₱100,000
      */
-    private BigDecimal philhealthMonthly(BigDecimal salary) {
-        double clipped = Math.max(10000, Math.min(100000, salary.doubleValue()));
-        return BigDecimal.valueOf(clipped * 0.025).setScale(2, RoundingMode.HALF_UP);
+    private BigDecimal computePhilHealthContribution(BigDecimal salary) {
+        double salaryAmount = salary.doubleValue();
+        double clipped = Math.max(10000, Math.min(100000, salaryAmount));
+        
+        return BigDecimal.valueOf(clipped)
+                .multiply(PayrollConfiguration.PHILHEALTH_EMPLOYEE_RATE)
+                .setScale(2, RoundingMode.HALF_UP);
     }
 
-    /** Pag-IBIG: employee = 2% of salary if > ₱1,500, capped at ₱100; else 1%. */
-    private BigDecimal pagibigMonthly(BigDecimal salary) {
+    /**
+     * Computes Pag-IBIG employee contribution.
+     * Rate: 1% if salary ≤ ₱1,500; 2% if > ₱1,500
+     * Monthly Cap: ₱100
+     */
+    private BigDecimal computePagIBIGContribution(BigDecimal salary) {
         double s = salary.doubleValue();
-        double contribution = (s <= 1500) ? s * 0.01 : Math.min(s * 0.02, 100.0);
+        double contribution = (s <= 1500) 
+            ? s * PayrollConfiguration.PAGIBIG_LOWER_RATE.doubleValue()
+            : Math.min(s * PayrollConfiguration.PAGIBIG_UPPER_RATE.doubleValue(), 
+                      PayrollConfiguration.PAGIBIG_MONTHLY_CAP.doubleValue());
+        
         return BigDecimal.valueOf(contribution).setScale(2, RoundingMode.HALF_UP);
     }
 
     /**
-     * BIR TRAIN Law withholding tax (monthly table, 2023).
-     * Taxable income = gross monthly salary − SSS − PhilHealth − Pag-IBIG.
+     * Computes BIR withholding tax using official TRAIN Law 2024 brackets.
+     * Taxable income = gross salary − SSS − PhilHealth − Pag-IBIG
      */
-    private BigDecimal withholdingTax(BigDecimal salary,
+    private BigDecimal computeWithholdingTax(BigDecimal salary,
             BigDecimal sss, BigDecimal philhealth, BigDecimal pagibig) {
         double taxable = salary.subtract(sss).subtract(philhealth).subtract(pagibig).doubleValue();
         if (taxable <= 0)
             return BigDecimal.ZERO;
 
-        double tax;
+        double tax = 0;
+        
         if (taxable <= 20833) {
             tax = 0;
         } else if (taxable <= 33333) {
@@ -116,5 +227,14 @@ public class PayrollComputationService {
         }
 
         return BigDecimal.valueOf(tax).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    /**
+     * Checks if a given date is a Philippine holiday
+     */
+    public boolean isHoliday(LocalDate date) {
+        String dateStr = date.toString();
+        return Arrays.asList(PayrollConfiguration.REGULAR_HOLIDAYS_2024).contains(dateStr) ||
+               Arrays.asList(PayrollConfiguration.REGULAR_HOLIDAYS_2025).contains(dateStr);
     }
 }

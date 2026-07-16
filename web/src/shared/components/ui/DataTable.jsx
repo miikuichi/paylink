@@ -1,9 +1,9 @@
-import './DataTable.css'
+import "./DataTable.css";
 
 /**
  * columns: [{ key, header, render?(row), align?: 'left'|'right'|'center', onHeaderClick?: Function }]
  */
-const DataTable = ({ columns, rows, emptyLabel = 'No records found.' }) => {
+const DataTable = ({ columns, rows, emptyLabel = "No records found." }) => {
   return (
     <div className="dtable-wrap">
       <table className="dtable">
@@ -12,8 +12,8 @@ const DataTable = ({ columns, rows, emptyLabel = 'No records found.' }) => {
             {columns.map((col) => (
               <th
                 key={col.key}
-                style={{ textAlign: col.align || 'left' }}
-                className={col.onHeaderClick ? 'dtable__th--sortable' : ''}
+                style={{ textAlign: col.align || "left" }}
+                className={col.onHeaderClick ? "dtable__th--sortable" : ""}
                 onClick={col.onHeaderClick}
               >
                 {col.header}
@@ -32,7 +32,7 @@ const DataTable = ({ columns, rows, emptyLabel = 'No records found.' }) => {
             rows.map((row, i) => (
               <tr key={row.id ?? i}>
                 {columns.map((col) => (
-                  <td key={col.key} style={{ textAlign: col.align || 'left' }}>
+                  <td key={col.key} style={{ textAlign: col.align || "left" }}>
                     {col.render ? col.render(row) : row[col.key]}
                   </td>
                 ))}
@@ -42,7 +42,7 @@ const DataTable = ({ columns, rows, emptyLabel = 'No records found.' }) => {
         </tbody>
       </table>
     </div>
-  )
-}
+  );
+};
 
-export default DataTable
+export default DataTable;

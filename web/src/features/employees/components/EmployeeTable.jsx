@@ -17,7 +17,10 @@ const SORTABLE_COLUMNS = [
   "shift",
 ];
 
-const normalizeText = (value) => String(value ?? "").toLowerCase().trim();
+const normalizeText = (value) =>
+  String(value ?? "")
+    .toLowerCase()
+    .trim();
 
 const getShiftText = (employee) =>
   `${employee.shiftStart ?? "09:00"} - ${employee.shiftEnd ?? "18:00"}`;
@@ -75,7 +78,8 @@ export function EmployeeTable({ employees, onEditRate, searchTerm = "" }) {
 
   const headerLabel = (label, key) => {
     if (!SORTABLE_COLUMNS.includes(key)) return label;
-    const arrow = sortKey === key ? (sortDirection === "asc" ? " ↑" : " ↓") : " ↕";
+    const arrow =
+      sortKey === key ? (sortDirection === "asc" ? " ↑" : " ↓") : " ↕";
     return `${label}${arrow}`;
   };
 
@@ -145,7 +149,9 @@ export function EmployeeTable({ employees, onEditRate, searchTerm = "" }) {
       />
       {visibleEmployees.length === 0 && (
         <p style={{ opacity: 0.5, textAlign: "center", padding: 24 }}>
-          {employees.length === 0 ? "No employees yet." : "No matching employees."}
+          {employees.length === 0
+            ? "No employees yet."
+            : "No matching employees."}
         </p>
       )}
     </>

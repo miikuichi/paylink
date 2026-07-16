@@ -20,6 +20,7 @@ import { HrEmployeesSection } from "./sections/HrEmployeesSection.jsx";
 import { HrPayrollSection } from "./sections/HrPayrollSection.jsx";
 import { HrPayslipsSection } from "./sections/HrPayslipsSection.jsx";
 import { HrCalendarSection } from "./sections/HrCalendarSection.jsx";
+import ConfirmModal from "../../shared/components/ui/ConfirmModal.jsx";
 import "./HrDashboard.css";
 
 const NAV_ITEMS = [
@@ -34,6 +35,8 @@ const HrDashboard = () => {
   const [activeKey, setActiveKey] = useState("overview");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [revokeTargetPayslipId, setRevokeTargetPayslipId] = useState(null);
+  const [revokeLoading, setRevokeLoading] = useState(false);
 
   const {
     employees,
@@ -134,20 +137,26 @@ const HrDashboard = () => {
     ]);
   };
 
-  const handleRevoke = async (payslipId) => {
-    if (
-      !window.confirm(
-        "Revoke this payslip? This is used for correcting payroll input issues.",
-      )
-    ) {
+  const handleRevokeClick = (payslipId) => {
+    setRevokeTargetPayslipId(payslipId);
+  };
+
+  const handleRevokeConfirm = async () => {
+    if (!revokeTargetPayslipId) {
       return;
     }
-    await handleRevokePayslip(payslipId, async () => {
-      await Promise.all([
-        refreshPayrolls(selectedPeriodId),
-        refreshPayslipsByPeriod(selectedPeriodId),
-      ]);
-    });
+    setRevokeLoading(true);
+    try {
+      await handleRevokePayslip(revokeTargetPayslipId, async () => {
+        await Promise.all([
+          refreshPayrolls(selectedPeriodId),
+          refreshPayslipsByPeriod(selectedPeriodId),
+        ]);
+      });
+      setRevokeTargetPayslipId(null);
+    } finally {
+      setRevokeLoading(false);
+    }
   };
 
   const currentPeriod = payPeriods.find((p) => p.id === selectedPeriodId);
@@ -185,6 +194,8 @@ const HrDashboard = () => {
           employees={employees}
           payrolls={payrolls}
           payPeriods={payPeriods}
+          holidays={holidays}
+          payslips={payslips}
           selectedPeriodId={selectedPeriodId}
           onAddEmployee={() => setShowAddEmployee(true)}
         />
@@ -224,7 +235,7 @@ const HrDashboard = () => {
           payslips={payslips}
           onAddPeriod={() => setShowAddPeriod(true)}
           currentPeriod={currentPeriod}
-          onRevokePayslip={handleRevoke}
+          onRevokePayslip={handleRevokeClick}
         />
       )}
 
@@ -282,6 +293,21 @@ const HrDashboard = () => {
           onClose={() => setShowEditEmployee(false)}
         />
       )}
+
+      <ConfirmModal
+        open={Boolean(revokeTargetPayslipId)}
+        title="Revoke Payslip"
+        message="Revoke this payslip? This action is used for correcting payroll input issues."
+        confirmLabel="Revoke"
+        confirmTone="danger"
+        loading={revokeLoading}
+        onConfirm={handleRevokeConfirm}
+        onCancel={() => {
+          if (!revokeLoading) {
+            setRevokeTargetPayslipId(null);
+          }
+        }}
+      />
     </DashboardLayout>
   );
 };

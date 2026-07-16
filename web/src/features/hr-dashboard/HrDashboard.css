@@ -136,6 +136,38 @@
   outline-offset: 0;
 }
 
+.overview-events-layout {
+  display: grid;
+  gap: 12px;
+}
+
+.overview-events-block {
+  min-height: 0;
+}
+
+.overview-events-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+  overflow: auto;
+}
+
+.overview-events-list--today {
+  max-height: 180px;
+}
+
+.overview-events-list--upcoming {
+  max-height: 220px;
+}
+
+.overview-events-item {
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+}
+
 @media (max-width: 720px) {
   .employee-panel-actions {
     width: 100%;

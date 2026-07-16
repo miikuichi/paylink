@@ -7,16 +7,19 @@ import {
 } from "../employees/index.js";
 import { usePayroll, AddPayPeriodModal } from "../payroll/index.js";
 import { usePayslips } from "../payslips/index.js";
+import { useHolidays } from "../holidays/hooks/useHolidays.js";
 import {
   GridIcon,
   PeopleIcon,
   WalletIcon,
   DocIcon,
+  CalendarIcon,
 } from "../../shared/icons/index.jsx";
 import { HrOverviewSection } from "./sections/HrOverviewSection.jsx";
 import { HrEmployeesSection } from "./sections/HrEmployeesSection.jsx";
 import { HrPayrollSection } from "./sections/HrPayrollSection.jsx";
 import { HrPayslipsSection } from "./sections/HrPayslipsSection.jsx";
+import { HrCalendarSection } from "./sections/HrCalendarSection.jsx";
 import "./HrDashboard.css";
 
 const NAV_ITEMS = [
@@ -24,6 +27,7 @@ const NAV_ITEMS = [
   { key: "employees", label: "Employees", icon: <PeopleIcon /> },
   { key: "payroll", label: "Payroll", icon: <WalletIcon /> },
   { key: "payslips", label: "Payslips", icon: <DocIcon /> },
+  { key: "calendar", label: "Calendar", icon: <CalendarIcon /> },
 ];
 
 const HrDashboard = () => {
@@ -77,6 +81,16 @@ const HrDashboard = () => {
 
   const { payslips, refreshPayslipsByPeriod, handleRevokePayslip } =
     usePayslips();
+  const {
+    holidays,
+    loading: holidaysLoading,
+    error: holidaysError,
+    refreshHolidays,
+    handleCreateHoliday,
+    handleUpdateHoliday,
+    handleDeactivateHoliday,
+  } = useHolidays();
+  const [includeInactiveHolidays, setIncludeInactiveHolidays] = useState(false);
 
   const loadBase = useCallback(async () => {
     setLoading(true);
@@ -85,6 +99,7 @@ const HrDashboard = () => {
       const [, periods] = await Promise.all([
         refreshEmployees(),
         refreshPayPeriods(),
+        refreshHolidays(includeInactiveHolidays),
       ]);
       if (periods.length > 0)
         setSelectedPeriodId((prev) => prev ?? periods[0].id);
@@ -93,7 +108,12 @@ const HrDashboard = () => {
     } finally {
       setLoading(false);
     }
-  }, [refreshEmployees, refreshPayPeriods]);
+  }, [
+    refreshEmployees,
+    refreshPayPeriods,
+    refreshHolidays,
+    includeInactiveHolidays,
+  ]);
 
   useEffect(() => {
     loadBase();
@@ -131,18 +151,30 @@ const HrDashboard = () => {
   };
 
   const currentPeriod = payPeriods.find((p) => p.id === selectedPeriodId);
+  const pageTitleByTab = {
+    overview: "HR Overview",
+    employees: "Employee Management",
+    payroll: "Payroll Operations",
+    payslips: "Payslip Records",
+    calendar: "Calendar and Events",
+  };
+  const pageSubtitleByTab = {
+    overview: currentPeriod
+      ? `Pay period: ${currentPeriod.label}`
+      : "No pay period selected",
+    employees: "Manage employee profiles, rates, and shifts",
+    payroll: "Process payroll and compute earnings and deductions",
+    payslips: "Review and revoke issued payslips",
+    calendar: "Plan holidays and track payroll timeline events",
+  };
 
   return (
     <DashboardLayout
       navItems={NAV_ITEMS}
       activeKey={activeKey}
       onNavigate={setActiveKey}
-      pageTitle="HR Overview"
-      pageSubtitle={
-        currentPeriod
-          ? `Pay period: ${currentPeriod.label}`
-          : "No pay period selected"
-      }
+      pageTitle={pageTitleByTab[activeKey] ?? "HR Dashboard"}
+      pageSubtitle={pageSubtitleByTab[activeKey] ?? ""}
     >
       {error && <p style={{ color: "red", marginBottom: 12 }}>{error}</p>}
       {loading && <p style={{ opacity: 0.5 }}>Loading…</p>}
@@ -193,6 +225,23 @@ const HrDashboard = () => {
           onAddPeriod={() => setShowAddPeriod(true)}
           currentPeriod={currentPeriod}
           onRevokePayslip={handleRevoke}
+        />
+      )}
+
+      {activeKey === "calendar" && (
+        <HrCalendarSection
+          holidays={holidays}
+          holidaysLoading={holidaysLoading}
+          holidaysError={holidaysError}
+          payPeriods={payPeriods}
+          payrolls={payrolls}
+          payslips={payslips}
+          includeInactiveHolidays={includeInactiveHolidays}
+          setIncludeInactiveHolidays={setIncludeInactiveHolidays}
+          onRefreshHolidays={refreshHolidays}
+          onCreateHoliday={handleCreateHoliday}
+          onUpdateHoliday={handleUpdateHoliday}
+          onDeactivateHoliday={handleDeactivateHoliday}
         />
       )}
 

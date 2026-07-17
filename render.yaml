@@ -82,7 +82,7 @@ services:
 
       # CORS Configuration
       - key: CORS_ALLOWED_ORIGINS
-        value: "https://paylink-web-wd2j.onrender.com,https://paylink-web.onrender.com,https://your-domain.com"
+        value: "https://paylink-web-*.onrender.com,https://paylink-web.onrender.com,https://your-domain.com"
 
       # Logging
       - key: LOG_DIR

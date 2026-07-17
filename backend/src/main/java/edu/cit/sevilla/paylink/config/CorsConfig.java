@@ -44,11 +44,13 @@ public class CorsConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                List<String> origins = Arrays.asList(allowedOrigins.split(","));
+                List<String> origins = Arrays.stream(allowedOrigins.split(","))
+                    .map(String::trim)
+                    .toList();
                 List<String> methods = Arrays.asList(allowedMethods.split(","));
 
                 registry.addMapping("/api/**")
-                        .allowedOrigins(origins.toArray(new String[0]))
+                    .allowedOriginPatterns(origins.toArray(new String[0]))
                         .allowedMethods(methods.toArray(new String[0]))
                         .allowedHeaders(allowedHeaders.split(","))
                         .allowCredentials(allowCredentials)
@@ -66,9 +68,9 @@ public class CorsConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         
         // Parse allowed origins
-        Arrays.stream(allowedOrigins.split(","))
+          Arrays.stream(allowedOrigins.split(","))
               .map(String::trim)
-              .forEach(configuration::addAllowedOrigin);
+              .forEach(configuration::addAllowedOriginPattern);
         
         // Parse allowed methods
         Arrays.stream(allowedMethods.split(","))

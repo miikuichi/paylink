@@ -58,16 +58,16 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/employees/me", "/api/payrolls/me", "/api/payslips/me")
+                        .requestMatchers(HttpMethod.GET, "/employees/me", "/payrolls/me", "/payslips/me")
                         .hasAnyRole("ADMIN", "EMPLOYEE")
-                        .requestMatchers(HttpMethod.GET, "/api/pay-periods", "/api/pay-periods/**")
+                        .requestMatchers(HttpMethod.GET, "/pay-periods", "/pay-periods/**")
                         .hasAnyRole("ADMIN", "EMPLOYEE")
-                        .requestMatchers(HttpMethod.GET, "/api/holidays", "/api/holidays/**")
+                        .requestMatchers(HttpMethod.GET, "/holidays", "/holidays/**")
                         .hasAnyRole("ADMIN", "EMPLOYEE")
-                        .requestMatchers("/api/employees/**", "/api/payrolls/**", "/api/payslips/**",
-                                "/api/pay-periods/**", "/api/holidays/**")
+                        .requestMatchers("/employees/**", "/payrolls/**", "/payslips/**",
+                                "/pay-periods/**", "/holidays/**")
                         .hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .authenticationProvider(authenticationProvider())

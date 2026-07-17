@@ -5,7 +5,7 @@
 #
 # Usage:
 #   docker build -t paylink-backend:latest .
-#   docker run -p 8080:8080 \
+#   docker run -p 9091:9091 \
 #     -e SPRING_PROFILES_ACTIVE=production \
 #     -e DB_HOST=db.example.com \
 #     paylink-backend:latest
@@ -48,11 +48,11 @@ RUN addgroup -g 1001 paylink && \
 COPY --from=builder /build/target/paylink-*.jar app.jar
 
 # Expose port
-EXPOSE 8080
+EXPOSE 9091
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD wget --quiet --tries=1 --spider http://localhost:8080/api/actuator/health || exit 1
+    CMD wget --quiet --tries=1 --spider http://localhost:9091/api/actuator/health || exit 1
 
 # Set ownership
 RUN chown -R paylink:paylink /app

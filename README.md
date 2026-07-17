@@ -73,9 +73,9 @@ Set-Location backend
 
 Default local API base URL:
 
-- `http://localhost:8080`
+- `http://localhost:9091`
 
-The web app proxies requests from `/api` to that backend port, and the Android debug build defaults to `http://10.0.2.2:8080/api/` for the emulator.
+The web app proxies requests from `/api` to that backend port, and the Android debug build defaults to `http://10.0.2.2:9091/api/` for the emulator.
 
 ### Run Backend Tests
 
@@ -120,7 +120,7 @@ Vite usually starts on:
 
 - `http://localhost:5173`
 
-Local API calls to `/api` are proxied to `http://localhost:8080`.
+Local API calls to `/api` are proxied to `http://localhost:9091`.
 
 ### Build The Web App
 
@@ -162,7 +162,7 @@ Set-Location mobile
 
 The mobile app uses these defaults:
 
-- Debug: `http://10.0.2.2:8080/api/`
+- Debug: `http://10.0.2.2:9091/api/`
 - Release: `https://your-backend-domain.com/api/`
 
 To override them:

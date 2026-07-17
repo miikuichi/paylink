@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/pay-periods")
+@RequestMapping("/pay-periods")
 @RequiredArgsConstructor
 public class PayPeriodController {
 

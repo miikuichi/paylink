@@ -15,7 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/payrolls")
+@RequestMapping("/payrolls")
 @RequiredArgsConstructor
 public class PayrollController {
 

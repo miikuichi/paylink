@@ -112,6 +112,12 @@ services:
     buildCommand: cd web && npm ci && npm run build:prod
     staticPublishPath: web/dist
 
+    # SPA fallback: rewrite all routes to index.html so React Router works
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
     # Environment variables
     envVars:
       # API endpoint pointing to backend service

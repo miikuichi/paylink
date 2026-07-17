@@ -68,7 +68,7 @@ spring.datasource.hikari.minimum-idle=5
 
 # JPA/Hibernate
 spring.jpa.hibernate.ddl-auto=validate
-spring.jpa.database-platform=org.hibernate.dialect.PostgreSQL10Dialect
+spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
 spring.jpa.properties.hibernate.jdbc.batch_size=20
 spring.jpa.properties.hibernate.order_inserts=true
 spring.jpa.properties.hibernate.order_updates=true

@@ -71,18 +71,6 @@ public class SecurityConfig {
                         .hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .authenticationProvider(authenticationProvider())
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-
-        return http.build();
-    }
-
-    @Bean
-    CommandLineRunner createAdmin(UserRepository users, PasswordEncoder encoder, AdminProperties props) {
-        return args -> {
-            if(propes.enabled() && user.findByEmail(props.email()).isEmpty()){
-                users.save(User.admin(props.email(),
-                encoder.encode(props.password())));
-            }
-        };
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);        return http.build();
     }
 }

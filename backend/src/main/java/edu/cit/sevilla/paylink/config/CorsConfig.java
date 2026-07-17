@@ -49,7 +49,7 @@ public class CorsConfig {
                 List<String> methods = parseCsv(allowedMethods);
                 List<String> headers = parseCsv(allowedHeaders);
 
-                registry.addMapping("/api/**")
+                registry.addMapping("/**")
                         .allowedOriginPatterns(originPatterns.toArray(new String[0]))
                         .allowedMethods(methods.toArray(new String[0]))
                         .allowedHeaders(headers.toArray(new String[0]))
@@ -82,7 +82,7 @@ public class CorsConfig {
                 "Content-Disposition"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/api/**", configuration);
+        source.registerCorsConfiguration("/**", configuration);
         return source;
     }
 

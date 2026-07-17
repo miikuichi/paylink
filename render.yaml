@@ -1,0 +1,151 @@
+# render.yaml - Infrastructure as Code for PayLink deployment on Render
+# 
+# This file defines all services needed for PayLink:
+# - Backend API (Spring Boot)
+# - Web App (React + Vite)
+# - PostgreSQL Database
+#
+# To deploy: Push to master branch or use Render dashboard
+# Documentation: https://render.com/docs
+
+services:
+  # PostgreSQL Database Service
+  - type: pserv
+    name: paylink-db
+    plan: starter  # $7/month (1 GB RAM, 10 GB storage)
+    region: singapore  # Change to your closest region
+    ipAllowList: []  # Allow all IPs (or restrict to backend service)
+    
+    # Database configuration
+    databaseName: paylink
+    databaseUser: paylink_user
+    # password is auto-generated and available as DATABASE_URL env var
+    
+    # Backup configuration
+    backupRetention: 7  # days
+    enableStorageAutoScale: true
+    maxStorageGB: 100
+    
+    # Environment variables created automatically:
+    # DATABASE_URL=postgresql://user:password@host:5432/paylink
+
+  # Backend API Service (Spring Boot)
+  - type: web
+    name: paylink-backend
+    plan: starter  # $7/month for free tier projects, $12/month standard
+    runtime: jvm
+    region: singapore
+    
+    # Build configuration
+    buildCommand: cd backend && ./mvnw clean package -DskipTests -Dspring.profiles.active=production
+    startCommand: cd backend && java -jar target/paylink-0.0.1-SNAPSHOT.jar
+    
+    # Port configuration
+    port: 8080
+    healthCheckPath: /api/actuator/health
+    healthCheckProtocol: HTTP
+    
+    # Build settings
+    dockerfile: false  # Using Maven build instead of Docker
+    
+    # Environment variables
+    envVars:
+      # Spring profile
+      - key: SPRING_PROFILES_ACTIVE
+        value: production
+      
+      # Server
+      - key: SERVER_PORT
+        value: "8080"
+      
+      # Database (linked from paylink-db service)
+      - key: DB_HOST
+        fromService:
+          name: paylink-db
+          type: pserv
+          property: hostname
+      - key: DB_PORT
+        value: "5432"
+      - key: DB_NAME
+        value: paylink
+      - key: DB_USER
+        value: paylink_user
+      - key: DB_PASSWORD
+        fromService:
+          name: paylink-db
+          type: pserv
+          property: password
+      
+      # JWT Secret (Generate: openssl rand -hex 128)
+      - key: JWT_SECRET
+        sync: false  # Set manually in Render dashboard
+      
+      # CORS Configuration
+      - key: CORS_ALLOWED_ORIGINS
+        value: "https://paylink-web.onrender.com,https://your-domain.com"
+      
+      # Logging
+      - key: LOG_DIR
+        value: /var/log
+
+    # Pre-deploy command (runs migrations)
+    preDeployCommand: cd backend && ./mvnw flyway:migrate -Dspring.profiles.active=production || true
+    
+    # Automatic deployment on push
+    autoDeploy: true
+    
+    # Scaling (for paid plans)
+    numInstances: 1
+    
+    # Build cache
+    buildCache:
+      enabled: true
+
+  # Web Application Service (React + Vite)
+  - type: web
+    name: paylink-web
+    plan: starter  # Free tier for static sites
+    runtime: node
+    region: singapore
+    
+    # Build configuration
+    buildCommand: cd web && npm ci && npm run build:prod
+    startCommand: npm run preview  # Or use: serve -s dist -l 3000
+    
+    # Port configuration
+    port: 3000
+    
+    # For static site deployment (recommended)
+    staticSite: true
+    buildDir: web/dist  # Output directory
+    
+    # Environment variables
+    envVars:
+      # API endpoint pointing to backend service
+      - key: VITE_API_BASE_URL
+        value: "https://paylink-backend.onrender.com/api"
+      
+      # Node environment
+      - key: NODE_ENV
+        value: production
+
+    # Automatic deployment
+    autoDeploy: true
+    
+    # Scaling
+    numInstances: 1
+
+# Custom domains (optional)
+domains:
+  - name: paylink-api.your-domain.com
+    service: paylink-backend
+  
+  - name: paylink.your-domain.com
+    service: paylink-web
+
+# Cron jobs (optional - for future use)
+# crons:
+#   - id: daily-backup
+#     service: paylink-db
+#     schedule: "0 2 * * *"  # 2 AM daily
+#     command: pg_dump ...

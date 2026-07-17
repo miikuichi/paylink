@@ -135,6 +135,19 @@ For production API configuration, create `web/.env.production` from `web/.env.pr
 VITE_API_BASE_URL=https://your-backend-domain.com/api
 ```
 
+### Render Deployment Notes
+
+When deploying the frontend and backend on Render, use these live values:
+
+- Backend `CORS_ALLOWED_ORIGINS`: `https://paylink-web-*.onrender.com,https://paylink-web.onrender.com`
+- Frontend `VITE_API_BASE_URL`: `https://paylink-pms.onrender.com/api`
+
+Redeploy order:
+
+1. Deploy the backend first.
+2. Then deploy the frontend.
+3. Clear build cache if Render still serves stale values.
+
 ### Debug The Web App
 
 Recommended workflow:

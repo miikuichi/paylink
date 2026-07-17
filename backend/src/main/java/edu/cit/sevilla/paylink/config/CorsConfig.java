@@ -11,6 +11,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * CORS Configuration for PayLink API
@@ -44,15 +45,14 @@ public class CorsConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                List<String> origins = Arrays.stream(allowedOrigins.split(","))
-                    .map(String::trim)
-                    .toList();
-                List<String> methods = Arrays.asList(allowedMethods.split(","));
+                List<String> originPatterns = parseCsv(allowedOrigins);
+                List<String> methods = parseCsv(allowedMethods);
+                List<String> headers = parseCsv(allowedHeaders);
 
                 registry.addMapping("/api/**")
-                    .allowedOriginPatterns(origins.toArray(new String[0]))
+                        .allowedOriginPatterns(originPatterns.toArray(new String[0]))
                         .allowedMethods(methods.toArray(new String[0]))
-                        .allowedHeaders(allowedHeaders.split(","))
+                        .allowedHeaders(headers.toArray(new String[0]))
                         .allowCredentials(allowCredentials)
                         .maxAge(maxAge)
                         .exposedHeaders("X-Total-Count", "X-Page-Number", "X-Page-Size");
@@ -66,33 +66,30 @@ public class CorsConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        
-        // Parse allowed origins
-          Arrays.stream(allowedOrigins.split(","))
-              .map(String::trim)
-              .forEach(configuration::addAllowedOriginPattern);
-        
-        // Parse allowed methods
-        Arrays.stream(allowedMethods.split(","))
-              .map(String::trim)
-              .forEach(configuration::addAllowedMethod);
-        
-        // Parse allowed headers
-        configuration.setAllowedHeaders(Arrays.asList(allowedHeaders.split(",")));
-        
+
+        configuration.setAllowedOriginPatterns(parseCsv(allowedOrigins));
+        configuration.setAllowedMethods(parseCsv(allowedMethods));
+        configuration.setAllowedHeaders(parseCsv(allowedHeaders));
+
         configuration.setAllowCredentials(allowCredentials);
         configuration.setMaxAge(maxAge);
-        
+
         // Expose headers for pagination and other metadata
         configuration.setExposedHeaders(Arrays.asList(
-            "X-Total-Count",
-            "X-Page-Number", 
-            "X-Page-Size",
-            "Content-Disposition"
-        ));
+                "X-Total-Count",
+                "X-Page-Number",
+                "X-Page-Size",
+                "Content-Disposition"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/api/**", configuration);
         return source;
+    }
+
+    private List<String> parseCsv(String value) {
+        return Arrays.stream(value.split(","))
+                .map(String::trim)
+                .filter(entry -> !entry.isEmpty())
+                .collect(Collectors.toList());
     }
 }

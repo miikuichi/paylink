@@ -41,6 +41,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -55,6 +56,7 @@ import edu.cit.sevilla.paylink.mobile.core.ui.theme.Cream100
 import edu.cit.sevilla.paylink.mobile.core.ui.theme.Cream200
 import edu.cit.sevilla.paylink.mobile.core.ui.theme.Gold100
 import edu.cit.sevilla.paylink.mobile.core.ui.theme.Gold500
+import edu.cit.sevilla.paylink.mobile.core.ui.theme.Maroon700
 import edu.cit.sevilla.paylink.mobile.core.ui.theme.Maroon800
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
@@ -85,29 +87,42 @@ fun HrDashboardScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Brush.verticalGradient(listOf(Cream100, Cream200)))
+            .background(Brush.verticalGradient(listOf(Cream100, Color(0xFFF9ECE6), Cream200)))
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Column {
-                Text(
-                    text = "HR Dashboard",
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = Maroon800,
-                    fontWeight = FontWeight.Bold,
-                )
-                Text(
-                    text = selectedPeriod?.label ?: "No pay period selected",
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
-
-            Button(
-                onClick = onLogout,
-                colors = ButtonDefaults.buttonColors(containerColor = Gold500, contentColor = Maroon800),
+        Card(
+            shape = RoundedCornerShape(18.dp),
+            colors = CardDefaults.cardColors(containerColor = Maroon700),
+            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                Text("Log out")
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "HR Dashboard",
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Text(
+                        text = selectedPeriod?.label ?: "No pay period selected",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.White.copy(alpha = 0.9f),
+                    )
+                }
+
+                Button(
+                    onClick = onLogout,
+                    colors = ButtonDefaults.buttonColors(containerColor = Gold500, contentColor = Maroon800),
+                    modifier = Modifier.heightIn(min = 40.dp),
+                ) {
+                    Text("Log out")
+                }
             }
         }
 
@@ -528,6 +543,7 @@ private fun HrPayrollTab(
                             onClick = {
                                 previewItems.add(DraftAdditionalItem(itemType = "ALLOWANCE"))
                             },
+                            modifier = Modifier.heightIn(min = 40.dp),
                         ) {
                             Text("Add Allowance")
                         }
@@ -535,6 +551,7 @@ private fun HrPayrollTab(
                             onClick = {
                                 previewItems.add(DraftAdditionalItem(itemType = "DEDUCTION"))
                             },
+                            modifier = Modifier.heightIn(min = 40.dp),
                         ) {
                             Text("Add Deduction")
                         }
@@ -622,6 +639,8 @@ private fun HrPayslipsTab(
     onSelectPeriod: (Long) -> Unit,
     onAddPeriodClick: () -> Unit,
 ) {
+    var expandedPayslipId by remember { mutableStateOf<Long?>(null) }
+
     LazyColumn(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         item {
             PayPeriodSelector(
@@ -642,18 +661,59 @@ private fun HrPayslipsTab(
             }
         }
 
+        if (state.payslips.isNotEmpty()) {
+            item {
+                Card(
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp, vertical = 10.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Text("Date", modifier = Modifier.weight(1.3f), fontWeight = FontWeight.Bold)
+                        Text("Net Pay", modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold)
+                        Text("Details", modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+        }
+
         items(state.payslips, key = { it.id }) { payslip ->
+            val isExpanded = expandedPayslipId == payslip.id
             Card(
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
             ) {
-                Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(payslip.employeeName, fontWeight = FontWeight.Bold)
-                    Text(payslip.periodLabel)
-                    Text("Gross: ${formatCurrency(payslip.grossPay)}")
-                    Text("Deductions: ${formatCurrency(payslip.totalDeductions)}")
-                    Text("Net: ${formatCurrency(payslip.netPay)}")
+                Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        val displayDate = payslip.issuedAt?.take(10) ?: payslip.periodLabel
+                        Text(displayDate, modifier = Modifier.weight(1.3f), fontWeight = FontWeight.SemiBold)
+                        Text(formatCurrency(payslip.netPay), modifier = Modifier.weight(1f), fontWeight = FontWeight.SemiBold)
+                        Button(
+                            onClick = {
+                                expandedPayslipId = if (isExpanded) null else payslip.id
+                            },
+                            modifier = Modifier
+                                .weight(1f)
+                                .heightIn(min = 40.dp),
+                        ) {
+                            Text(if (isExpanded) "Hide" else "Details")
+                        }
+                    }
+
+                    if (isExpanded) {
+                        Text(payslip.employeeName, fontWeight = FontWeight.Bold)
+                        Text("Gross: ${formatCurrency(payslip.grossPay)}")
+                        Text("Deductions: ${formatCurrency(payslip.totalDeductions)}")
+                    }
                 }
             }
         }

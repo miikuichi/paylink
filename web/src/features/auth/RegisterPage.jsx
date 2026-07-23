@@ -14,7 +14,6 @@ const initialForm = {
   username: "",
   password: "",
   confirmPassword: "",
-  role: "EMPLOYEE",
   agree: false,
 };
 
@@ -77,7 +76,7 @@ const RegisterPage = () => {
 
     setLoading(true);
     try {
-      await register(form);
+      await register({ ...form, role: "EMPLOYEE" });
       setSuccess(true);
       setTimeout(() => navigate("/login", { replace: true }), 1400);
     } catch (err) {
@@ -169,32 +168,6 @@ const RegisterPage = () => {
             autoComplete="new-password"
             required
           />
-        </div>
-
-        <div className="field">
-          <label className="field__label">I am registering as</label>
-          <div className="auth-form__role-group">
-            <button
-              type="button"
-              className={`auth-form__role-card ${form.role === "EMPLOYEE" ? "auth-form__role-card--active" : ""}`}
-              onClick={() => setForm((f) => ({ ...f, role: "EMPLOYEE" }))}
-            >
-              <span className="auth-form__role-title">Employee</span>
-              <span className="auth-form__role-desc">
-                View my payslips & payroll history
-              </span>
-            </button>
-            <button
-              type="button"
-              className={`auth-form__role-card ${form.role === "ADMIN" ? "auth-form__role-card--active" : ""}`}
-              onClick={() => setForm((f) => ({ ...f, role: "ADMIN" }))}
-            >
-              <span className="auth-form__role-title">HR / Admin</span>
-              <span className="auth-form__role-desc">
-                Manage employees & process payroll
-              </span>
-            </button>
-          </div>
         </div>
 
         <label className="auth-form__terms">

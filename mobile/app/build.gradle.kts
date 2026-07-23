@@ -5,9 +5,9 @@ plugins {
 
 val releaseApiBaseUrl = providers.gradleProperty("PAYLINK_API_BASE_URL").orNull
     ?: System.getenv("PAYLINK_API_BASE_URL")
-    ?: "https://your-backend-domain.com/api/"
+    ?: "https://paylink-pms.onrender.com/api/"
 val debugApiBaseUrl = providers.gradleProperty("PAYLINK_DEBUG_API_BASE_URL").orNull
-    ?: "http://10.0.2.2:8080/api/"
+    ?: "https://paylink-pms.onrender.com/api/"
 
 val releaseStoreFile = providers.gradleProperty("PAYLINK_RELEASE_STORE_FILE").orNull
 val releaseStorePassword = providers.gradleProperty("PAYLINK_RELEASE_STORE_PASSWORD").orNull

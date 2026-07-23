@@ -1,7 +1,6 @@
 package edu.cit.sevilla.paylink.mobile.features.auth.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -32,9 +31,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import edu.cit.sevilla.paylink.mobile.features.auth.data.model.Session
 import edu.cit.sevilla.paylink.mobile.core.ui.theme.Cream100
 import edu.cit.sevilla.paylink.mobile.core.ui.theme.Cream200
-import edu.cit.sevilla.paylink.mobile.core.ui.theme.Gold300
 import edu.cit.sevilla.paylink.mobile.core.ui.theme.Gold500
-import edu.cit.sevilla.paylink.mobile.core.ui.theme.Maroon700
 import edu.cit.sevilla.paylink.mobile.core.ui.theme.Maroon800
 
 @Composable
@@ -51,7 +48,6 @@ fun RegisterScreen(
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
-    var role by remember { mutableStateOf("EMPLOYEE") }
 
     LaunchedEffect(state.successSession) {
         state.successSession?.let {
@@ -84,19 +80,6 @@ fun RegisterScreen(
                     fontWeight = FontWeight.Bold,
                 )
 
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    RoleChip(
-                        label = "Employee",
-                        selected = role == "EMPLOYEE",
-                        onClick = { role = "EMPLOYEE" },
-                    )
-                    RoleChip(
-                        label = "HR / Admin",
-                        selected = role == "ADMIN",
-                        onClick = { role = "ADMIN" },
-                    )
-                }
-
                 OutlinedTextField(value = firstName, onValueChange = { firstName = it; viewModel.clearError() }, label = { Text("First name") }, singleLine = true, modifier = Modifier.fillMaxWidth())
                 OutlinedTextField(value = lastName, onValueChange = { lastName = it; viewModel.clearError() }, label = { Text("Last name") }, singleLine = true, modifier = Modifier.fillMaxWidth())
                 OutlinedTextField(value = email, onValueChange = { email = it; viewModel.clearError() }, label = { Text("Email") }, singleLine = true, modifier = Modifier.fillMaxWidth())
@@ -121,7 +104,7 @@ fun RegisterScreen(
                             username = username,
                             password = password,
                             confirmPassword = confirmPassword,
-                            role = role,
+                            role = "EMPLOYEE",
                         )
                     },
                     enabled = !state.isLoading,
@@ -142,33 +125,5 @@ fun RegisterScreen(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun RoleChip(
-    label: String,
-    selected: Boolean,
-    onClick: () -> Unit,
-) {
-    val container = if (selected) Gold300 else MaterialTheme.colorScheme.surface
-    val border = if (selected) Gold500 else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
-    val textColor = if (selected) Maroon700 else MaterialTheme.colorScheme.onSurface
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = container),
-        border = androidx.compose.foundation.BorderStroke(1.dp, border),
-    ) {
-        Text(
-            text = label,
-            color = textColor,
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 12.dp),
-        )
     }
 }

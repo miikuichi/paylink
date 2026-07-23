@@ -39,6 +39,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -49,6 +50,7 @@ import edu.cit.sevilla.paylink.mobile.core.ui.theme.Cream100
 import edu.cit.sevilla.paylink.mobile.core.ui.theme.Cream200
 import edu.cit.sevilla.paylink.mobile.core.ui.theme.Gold100
 import edu.cit.sevilla.paylink.mobile.core.ui.theme.Gold500
+import edu.cit.sevilla.paylink.mobile.core.ui.theme.Maroon700
 import edu.cit.sevilla.paylink.mobile.core.ui.theme.Maroon800
 
 private val employeeTabs = listOf("Overview", "My Payslips", "Payslip History")
@@ -70,28 +72,41 @@ fun EmployeeDashboardScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Brush.verticalGradient(listOf(Cream100, Cream200)))
+            .background(Brush.verticalGradient(listOf(Cream100, Color(0xFFF9ECE6), Cream200)))
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Column {
-                Text(
-                    text = "Welcome back, $name",
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = Maroon800,
-                    fontWeight = FontWeight.Bold,
-                )
-                Text(
-                    text = state.profile?.position ?: "Employee dashboard",
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
-            Button(
-                onClick = onLogout,
-                colors = ButtonDefaults.buttonColors(containerColor = Gold500, contentColor = Maroon800),
+        Card(
+            shape = RoundedCornerShape(18.dp),
+            colors = CardDefaults.cardColors(containerColor = Maroon700),
+            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                Text("Log out")
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Welcome back, $name",
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Text(
+                        text = state.profile?.position ?: "Employee dashboard",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.White.copy(alpha = 0.9f),
+                    )
+                }
+                Button(
+                    onClick = onLogout,
+                    colors = ButtonDefaults.buttonColors(containerColor = Gold500, contentColor = Maroon800),
+                    modifier = Modifier.heightIn(min = 40.dp),
+                ) {
+                    Text("Log out")
+                }
             }
         }
 
@@ -215,11 +230,9 @@ private fun EmployeePayslipsTab(payslips: List<PayslipDto>) {
                         .padding(horizontal = 12.dp, vertical = 10.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    Text("Pay Period", modifier = Modifier.weight(1.3f), fontWeight = FontWeight.Bold)
-                    Text("Gross", modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold)
-                    Text("Deductions", modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold)
-                    Text("Net", modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold)
-                    Text("Action", modifier = Modifier.weight(0.9f), fontWeight = FontWeight.Bold)
+                    Text("Date", modifier = Modifier.weight(1.3f), fontWeight = FontWeight.Bold)
+                    Text("Net Pay", modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold)
+                    Text("Details", modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -245,13 +258,14 @@ private fun EmployeePayslipsTab(payslips: List<PayslipDto>) {
                         .padding(horizontal = 12.dp, vertical = 10.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    Text(payslip.periodLabel, modifier = Modifier.weight(1.3f), fontWeight = FontWeight.SemiBold)
-                    Text(formatCurrency(payslip.grossPay), modifier = Modifier.weight(1f))
-                    Text(formatCurrency(payslip.totalDeductions), modifier = Modifier.weight(1f))
+                    val displayDate = payslip.issuedAt?.take(10) ?: payslip.periodLabel
+                    Text(displayDate, modifier = Modifier.weight(1.3f), fontWeight = FontWeight.SemiBold)
                     Text(formatCurrency(payslip.netPay), modifier = Modifier.weight(1f), fontWeight = FontWeight.SemiBold)
                     Button(
                         onClick = { selectedPayslip = payslip },
-                        modifier = Modifier.weight(0.9f),
+                        modifier = Modifier
+                            .weight(1f)
+                            .heightIn(min = 40.dp),
                     ) {
                         Text("Details")
                     }
